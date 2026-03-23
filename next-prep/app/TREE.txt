@@ -1,0 +1,16 @@
+# Crear en Next.js (no versionado como código aún)
+
+app/
+  layout.tsx
+  page.tsx                 → redirect('/inicio')
+  globals.css              ← importar desde ../../styles.css o migrar tokens
+  inicio/
+    page.tsx
+  atletas/
+    page.tsx
+    [athleteId]/
+      page.tsx
+  creador/
+    page.tsx
+  oficina/
+    page.tsx

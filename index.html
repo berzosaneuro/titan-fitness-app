@@ -3,1044 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TITAN OS v3.0 - Enhanced Edition</title>
+    <title>TITAN OS — Acceso coach</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #050505;
-            --card: #0F0F12;
-            --neon-blue: #00F0FF;
-            --chrome: #FFFFFF;
-            --metal-grey: #8899A6;
-            --glass: rgba(20, 20, 30, 0.9);
-            --shadow: #00F0FF;
-            --danger: #FF003C;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Rajdhani', sans-serif;
-            background: var(--bg);
-            color: var(--chrome);
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
-        
-        .app-container {
-            max-width: 100%;
-            margin: 0 auto;
-            padding-bottom: 80px;
-        }
-        
-        /* HEADER */
-        .header {
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(180deg, rgba(0,240,255,0.05) 0%, transparent 100%);
-            border-bottom: 1px solid #1a1a1a;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        
-        .header-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 28px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            text-shadow: 0 0 20px rgba(255,255,255,0.3);
-            animation: glowPulse 3s ease-in-out infinite;
-        }
-        
-        .version {
-            color: var(--neon-blue);
-            font-size: 14px;
-            text-shadow: 0 0 10px var(--neon-blue);
-        }
-        
-        .icon-3d {
-            width: 50px;
-            height: 50px;
-            background: #111;
-            border-radius: 50%;
-            border: 1px solid #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(0,240,255,0.3);
-            position: relative;
-        }
-        
-        .icon-3d:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 25px var(--neon-blue);
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            background: var(--danger);
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 10px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 10px var(--danger);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-        }
-        
-        /* CYBER CARD */
-        .cyber-card {
-            background: var(--card);
-            margin: 20px;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #222;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            animation: cardEntry 0.5s ease-out backwards;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .cyber-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
-            animation: scanLine 3s linear infinite;
-        }
-        
-        @keyframes scanLine {
-            0%, 100% { left: -100%; }
-            50% { left: 100%; }
-        }
-        
-        .cyber-card.alert {
-            border-color: var(--danger);
-            box-shadow: 0 0 30px rgba(255,0,60,0.3);
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #222;
-        }
-        
-        .card-icon {
-            margin-right: 12px;
-            font-size: 22px;
-            filter: drop-shadow(0 0 8px var(--neon-blue));
-        }
-        
-        .card-icon.alert {
-            filter: drop-shadow(0 0 8px var(--danger));
-        }
-        
-        .card-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            flex: 1;
-        }
-        
-        .card-title.alert {
-            color: var(--danger);
-        }
-
-        .card-action {
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            opacity: 0.7;
-        }
-
-        .card-action:hover {
-            opacity: 1;
-            transform: scale(1.2);
-        }
-        
-        /* CYBER BUTTON */
-        .cyber-button {
-            position: relative;
-            height: 50px;
-            background: var(--neon-blue);
-            border: 1px solid var(--neon-blue);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-            box-shadow: 0 0 20px var(--neon-blue);
-            transition: all 0.3s ease;
-            margin-top: 15px;
-        }
-        
-        .cyber-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .cyber-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 35px var(--neon-blue);
-        }
-        
-        .cyber-button:active {
-            transform: translateY(0);
-        }
-        
-        .cyber-button.danger {
-            background: var(--danger);
-            border-color: var(--danger);
-            box-shadow: 0 0 20px var(--danger);
-        }
-        
-        .cyber-button.secondary {
-            background: #000;
-            border: 1px solid var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0,240,255,0.3);
-        }
-
-        .cyber-button.small {
-            height: 38px;
-            padding: 0 20px;
-            margin: 0;
-            width: auto;
-        }
-        
-        .button-text {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            font-size: 14px;
-            letter-spacing: 1px;
-            color: #000;
-            z-index: 10;
-            text-transform: uppercase;
-        }
-
-        .button-text.small {
-            font-size: 12px;
-        }
-        
-        .cyber-button.secondary .button-text {
-            color: var(--neon-blue);
-        }
-        
-        /* TEXT STYLES */
-        .text-chrome {
-            color: var(--chrome);
-            font-size: 15px;
-            font-weight: 500;
-            line-height: 1.6;
-        }
-        
-        .text-neon {
-            color: var(--neon-blue);
-            font-size: 15px;
-            font-weight: 700;
-            text-shadow: 0 0 10px var(--neon-blue);
-        }
-        
-        .text-metal {
-            color: var(--metal-grey);
-            font-size: 14px;
-        }
-        
-        .text-small {
-            font-size: 12px;
-            color: var(--metal-grey);
-        }
-        
-        /* ROW */
-        .row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .divider {
-            height: 1px;
-            background: #222;
-            margin: 12px 0;
-        }
-        
-        /* TIME */
-        .time-neon {
-            color: var(--neon-blue);
-            font-weight: 700;
-            font-family: 'Orbitron', monospace;
-            width: 60px;
-            text-shadow: 0 0 8px var(--neon-blue);
-        }
-        
-        /* LIVE PANEL */
-        .live-panel {
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-            margin: 20px 0;
-            gap: 10px;
-        }
-        
-        .live-item {
-            flex: 1;
-            background: #111;
-            padding: 15px 10px;
-            border-radius: 8px;
-            border: 1px solid #222;
-            text-align: center;
-            animation: cardEntry 0.6s ease-out backwards;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .live-item:hover {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0,240,255,0.3);
-        }
-        
-        .label-neon {
-            color: var(--neon-blue);
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-        
-        .value-chrome {
-            color: var(--chrome);
-            font-size: 18px;
-            font-weight: 700;
-            font-family: 'Orbitron', monospace;
-        }
-
-        .trend {
-            font-size: 11px;
-            margin-top: 5px;
-            font-weight: 600;
-        }
-
-        .trend.up {
-            color: #00FF88;
-        }
-
-        .trend.down {
-            color: var(--danger);
-        }
-        
-        /* AVATAR */
-        .avatar-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .avatar-3d {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #111;
-            border: 2px solid #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-            position: relative;
-        }
-
-        .avatar-3d::after {
-            content: '';
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 12px;
-            height: 12px;
-            background: #00FF88;
-            border-radius: 50%;
-            border: 2px solid #111;
-            box-shadow: 0 0 8px #00FF88;
-        }
-        
-        .athlete-info h2 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 22px;
-            font-weight: 900;
-        }
-        
-        .athlete-status {
-            color: var(--neon-blue);
-            letter-spacing: 1.5px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-        
-        /* GRAPH */
-        .graph-container {
-            height: 140px;
-            position: relative;
-            margin-top: 20px;
-            display: flex;
-            align-items: flex-end;
-            padding: 0 10px;
-        }
-        
-        .menstrual-zone {
-            position: absolute;
-            right: 30px;
-            width: 50px;
-            height: 100%;
-            background: rgba(0, 240, 255, 0.05);
-            border-left: 1px solid rgba(0, 240, 255, 0.2);
-            border-right: 1px solid rgba(0, 240, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .zone-label {
-            color: var(--neon-blue);
-            font-size: 9px;
-            font-weight: 700;
-            transform: rotate(-90deg);
-            white-space: nowrap;
-        }
-        
-        .bars-container {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            width: 100%;
-            height: 100%;
-            gap: 8px;
-        }
-        
-        .bar-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .bar-wrapper:hover .bar-real {
-            box-shadow: 0 0 25px var(--neon-blue);
-        }
-        
-        .bar-ghost {
-            width: 4px;
-            background: #333;
-            position: absolute;
-            bottom: 0;
-            opacity: 0.5;
-        }
-        
-        .bar-real {
-            width: 8px;
-            background: var(--neon-blue);
-            border-radius: 4px;
-            box-shadow: 0 0 15px var(--neon-blue);
-            animation: barGrow 0.8s ease-out backwards;
-            transition: all 0.3s ease;
-        }
-        
-        /* TABS */
-        .tab-header {
-            display: flex;
-            padding: 0 20px;
-            margin-bottom: 20px;
-            gap: 10px;
-            border-bottom: 2px solid #222;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-            transition: all 0.3s ease;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .tab.active {
-            border-bottom-color: var(--neon-blue);
-            color: var(--neon-blue);
-        }
-        
-        .tab:not(.active) {
-            color: var(--metal-grey);
-        }
-
-        .tab:hover:not(.active) {
-            color: var(--chrome);
-        }
-        
-        /* VARIANT TABS */
-        .variant-tabs {
-            display: flex;
-            padding: 0 20px;
-            margin-bottom: 20px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .variant-tab {
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .variant-tab.active {
-            background: var(--neon-blue);
-            color: #000;
-        }
-        
-        .variant-tab:not(.active) {
-            background: #111;
-            color: var(--metal-grey);
-            border: 1px solid #333;
-        }
-
-        .variant-tab:hover:not(.active) {
-            border-color: var(--neon-blue);
-            color: var(--chrome);
-        }
-        
-        /* FINANCE CARD */
-        .finance-card {
-            background: #08080A;
-            margin: 20px;
-            padding: 25px;
-            border-radius: 15px;
-            border: 1px solid #222;
-            box-shadow: 0 0 40px rgba(0,240,255,0.15);
-        }
-        
-        .finance-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .finance-label {
-            color: var(--metal-grey);
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .finance-value {
-            font-family: 'Orbitron', monospace;
-            font-size: 18px;
-            font-weight: 700;
-        }
-        
-        .finance-total {
-            font-size: 32px;
-            color: var(--neon-blue);
-            text-shadow: 0 0 20px var(--neon-blue);
-        }
-        
-        .expenses-box {
-            background: #111;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-            border: 1px solid #222;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        
-        .expenses-box.open {
-            max-height: 400px;
-        }
-        
-        .expandable {
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        .expandable:hover {
-            color: var(--neon-blue);
-        }
-        
-        /* BOTTOM NAV */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #000;
-            border-top: 1px solid #222;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            z-index: 1000;
-        }
-        
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 8px;
-            position: relative;
-        }
-        
-        .nav-item.active {
-            color: var(--neon-blue);
-        }
-        
-        .nav-item:not(.active) {
-            color: var(--metal-grey);
-        }
-        
-        .nav-icon {
-            font-size: 24px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-item.active .nav-icon {
-            filter: drop-shadow(0 0 10px var(--neon-blue));
-        }
-        
-        .nav-label {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        
-        /* SCREENS */
-        .screen {
-            display: none;
-            animation: screenFade 0.4s ease-out;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
-        /* VAULT OVERLAY */
-        .vault-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #020202;
-            z-index: 999;
-            overflow-y: auto;
-            display: none;
-            animation: vaultOpen 0.5s ease-out;
-        }
-        
-        .vault-overlay.open {
-            display: block;
-        }
-        
-        .vault-header {
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #1a1a1a;
-        }
-        
-        .vault-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--neon-blue);
-            text-shadow: 0 0 20px var(--neon-blue);
-            letter-spacing: 2px;
-        }
-        
-        .close-btn {
-            width: 40px;
-            height: 40px;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .close-btn:hover {
-            background: #1a1a1a;
-            transform: scale(1.1);
-        }
-        
-        .ai-box {
-            background: rgba(0, 240, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border: 1px solid rgba(0, 240, 255, 0.3);
-        }
-
-        /* MODAL */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 1001;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal-overlay.open {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--card);
-            border: 1px solid var(--neon-blue);
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 90%;
-            width: 400px;
-            box-shadow: 0 0 50px var(--neon-blue);
-            animation: modalSlide 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes modalSlide {
-            from { 
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 20px;
-            font-weight: 900;
-            color: var(--neon-blue);
-            text-shadow: 0 0 15px var(--neon-blue);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .modal-body {
-            color: var(--chrome);
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .modal-actions .cyber-button {
-            flex: 1;
-            margin: 0;
-        }
-
-        /* INPUT FIELD */
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-label {
-            color: var(--metal-grey);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .cyber-input {
-            width: 100%;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 6px;
-            padding: 12px 15px;
-            color: var(--chrome);
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .cyber-input:focus {
-            outline: none;
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0,240,255,0.3);
-        }
-
-        /* PROGRESS BAR */
-        .progress-container {
-            background: #111;
-            border-radius: 8px;
-            height: 8px;
-            overflow: hidden;
-            margin-top: 10px;
-            border: 1px solid #222;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--neon-blue), #00D0E0);
-            box-shadow: 0 0 10px var(--neon-blue);
-            transition: width 0.5s ease;
-        }
-
-        /* EDITABLE CONTENT */
-        .editable {
-            cursor: pointer;
-            position: relative;
-            padding: 2px;
-            transition: all 0.3s ease;
-        }
-
-        .editable:hover {
-            background: rgba(0,240,255,0.1);
-            border-radius: 4px;
-        }
-
-        .editable::after {
-            content: '✏️';
-            position: absolute;
-            right: -20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            font-size: 12px;
-        }
-
-        .editable:hover::after {
-            opacity: 0.5;
-        }
-
-        /* CLIENT LIST */
-        .client-list-item {
-            padding: 15px;
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .client-list-item:hover {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0,240,255,0.2);
-        }
-
-        .client-name {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .client-status {
-            font-size: 12px;
-            color: var(--metal-grey);
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .status-indicator.active {
-            background: #00FF88;
-            box-shadow: 0 0 8px #00FF88;
-        }
-
-        .status-indicator.warning {
-            background: #FFB800;
-            box-shadow: 0 0 8px #FFB800;
-        }
-
-        .status-indicator.danger {
-            background: var(--danger);
-            box-shadow: 0 0 8px var(--danger);
-        }
-
-        /* SEARCH BAR */
-        .search-container {
-            padding: 15px 20px;
-            background: rgba(0,0,0,0.5);
-        }
-
-        .search-input {
-            width: 100%;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 25px;
-            padding: 12px 20px;
-            color: var(--chrome);
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 20px rgba(0,240,255,0.3);
-        }
-
-        .search-input::placeholder {
-            color: var(--metal-grey);
-        }
-        
-        /* ANIMATIONS */
-        @keyframes cardEntry {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes barGrow {
-            from {
-                transform: scaleY(0);
-            }
-            to {
-                transform: scaleY(1);
-            }
-        }
-        
-        @keyframes screenFade {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-        
-        @keyframes vaultOpen {
-            from {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @keyframes glowPulse {
-            0%, 100% {
-                text-shadow: 0 0 20px rgba(255,255,255,0.3);
-            }
-            50% {
-                text-shadow: 0 0 30px rgba(255,255,255,0.5), 0 0 40px rgba(0,240,255,0.3);
-            }
-        }
-
-        /* TOOLTIP */
-        .tooltip {
-            position: relative;
-        }
-
-        .tooltip::before {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-5px);
-            background: var(--card);
-            color: var(--chrome);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            border: 1px solid var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0,240,255,0.3);
-            z-index: 1000;
-        }
-
-        .tooltip:hover::before {
-            opacity: 1;
-        }
-        
-        /* RESPONSIVE */
-        @media (min-width: 768px) {
-            .app-container {
-                max-width: 480px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="app-container">
+    <div id="auth-screen" class="layer is-active" aria-hidden="false">
+        <div class="auth-layout">
+            <div class="auth-brand">
+                <div class="auth-brand__title">TITAN <span class="version">OS</span></div>
+                <p class="auth-brand__tagline">Copiloto operativo para entrenadores</p>
+            </div>
+            <form id="auth-login-form" class="auth-card cyber-card" novalidate>
+                <div class="card-header">
+                    <div class="card-icon">🔐</div>
+                    <div class="card-title">ACCESO COACH</div>
+                </div>
+                <div id="auth-error" class="auth-error is-hidden" role="alert"></div>
+                <div class="input-group">
+                    <label class="input-label" for="auth-email">EMAIL</label>
+                    <input id="auth-email" class="cyber-input" type="email" autocomplete="username" placeholder="coach@titan.app">
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="auth-password">CONTRASEÑA</label>
+                    <input id="auth-password" class="cyber-input" type="password" autocomplete="current-password" placeholder="••••••••">
+                </div>
+                <button type="submit" id="auth-submit" class="cyber-button auth-submit-btn">
+                    <span class="button-text" id="auth-submit-label">ACCEDER</span>
+                </button>
+                <div class="auth-divider"><span>o</span></div>
+                <button type="button" id="auth-demo-btn" class="cyber-button secondary auth-demo-btn">
+                    <span class="button-text">MODO DEMO</span>
+                </button>
+                <p class="text-small auth-hint">Demo con credenciales: <strong>coach@titan.app</strong> · <strong>Titan2025!</strong> — o entra sin contraseña con Modo demo.</p>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-screen" class="layer" aria-hidden="true">
+        <header class="app-user-bar">
+            <div class="app-user-bar__meta">
+                <span class="app-user-bar__label">Sesión</span>
+                <span id="app-user-display" class="app-user-bar__email">—</span>
+            </div>
+            <button type="button" class="auth-logout-btn" id="auth-logout-btn">Cerrar sesión</button>
+        </header>
+        <div class="app-container">
         <!-- INICIO SCREEN -->
         <div class="screen active" id="screen-inicio">
             <div class="header">
@@ -1050,6 +58,23 @@
                 <div class="icon-3d tooltip" data-tooltip="3 notificaciones" onclick="showNotifications()">
                     🔔
                     <span class="notification-badge">3</span>
+                </div>
+            </div>
+
+            <div class="cyber-card ai-daily-card" style="animation-delay: 0.05s;">
+                <div class="card-header">
+                    <div class="card-icon">🧠</div>
+                    <div class="card-title">RESUMEN IA DEL DÍA</div>
+                    <div class="card-action tooltip" data-tooltip="Sugerencias asistidas; tú decides" onclick="refreshDailyAISummary()">↻</div>
+                </div>
+                <div id="ai-daily-skeleton" class="ai-skeleton">
+                    <div class="ai-skeleton__line"></div>
+                    <div class="ai-skeleton__line ai-skeleton__line--short"></div>
+                    <div class="ai-skeleton__line"></div>
+                </div>
+                <div id="ai-daily-content" class="ai-content ai-content--hidden"></div>
+                <div class="text-small ai-disclaimer u-mt-8">
+                    El copiloto prioriza y explica; no envía mensajes ni cambia planes sin tu acción.
                 </div>
             </div>
             
@@ -1062,10 +87,20 @@
                 <div class="text-chrome">
                     Detectada rutina estancada en <strong>Carlos R.</strong> (14 semanas).
                 </div>
-                <div class="text-chrome" style="margin-top: 8px;">
-                    ⚠️ <span style="color: var(--danger);">Riesgo de abandono alto.</span>
+                <div class="text-chrome u-mt-8">
+                    ⚠️ <span class="u-text-danger">Riesgo de abandono alto.</span>
                 </div>
-                <div class="cyber-button danger" style="margin-top: 15px;" onclick="contactClient('Carlos R.')">
+                <div class="ai-explain-block u-mt-10">
+                    <div class="ai-label">POR QUÉ LO DETECTAMOS</div>
+                    <p class="text-small text-chrome">
+                        Regla de negocio + patrón de datos: sin variación de peso/perímetros en &gt;12 semanas en déficit declarado y sin check-ins de adherencia recientes suficientes para validar ingesta.
+                    </p>
+                    <div class="ai-label u-mt-10">SIGUIENTE MEJOR ACCIÓN (RECOMENDACIÓN)</div>
+                    <p class="text-small text-neon">
+                        Contacto humano en las próximas 24–48 h: validar adherencia real antes de ajustar macros o cardio. Puedes usar el borrador desde 🧠 Coach IA en su ficha.
+                    </p>
+                </div>
+                <div class="cyber-button danger u-mt-15" onclick="contactClient('Carlos R.')">
                     <span class="button-text">📞 CONTACTAR AHORA</span>
                 </div>
             </div>
@@ -1079,19 +114,19 @@
                 <div class="row">
                     <span class="time-neon">09:00</span>
                     <span class="text-chrome">Revisión Javi M. (Check-in Recibido)</span>
-                    <span style="cursor: pointer;" onclick="completeTask(this)">✓</span>
+                    <span class="u-cursor-pointer" onclick="completeTask(this)">✓</span>
                 </div>
                 <div class="divider"></div>
                 <div class="row">
                     <span class="time-neon">11:30</span>
                     <span class="text-chrome">Videollamada Estrategia (Raúl C.)</span>
-                    <span style="cursor: pointer;" onclick="completeTask(this)">✓</span>
+                    <span class="u-cursor-pointer" onclick="completeTask(this)">✓</span>
                 </div>
                 <div class="divider"></div>
                 <div class="row">
                     <span class="time-neon">15:00</span>
                     <span class="text-chrome">Actualizar planes de nutrición</span>
-                    <span style="cursor: pointer;" onclick="completeTask(this)">✓</span>
+                    <span class="u-cursor-pointer" onclick="completeTask(this)">✓</span>
                 </div>
             </div>
             
@@ -1190,7 +225,7 @@
                         <div class="athlete-status">WELLNESS • 2 WEEKS OUT</div>
                     </div>
                 </div>
-                <div class="close-btn" onclick="backToAthletes()" style="border-radius: 8px;">←</div>
+                <div class="close-btn close-btn--square" onclick="backToAthletes()">←</div>
             </div>
             
             <div class="live-panel">
@@ -1208,6 +243,19 @@
                     <div class="label-neon">HAMBRE</div>
                     <div class="value-chrome">8/10</div>
                     <div class="trend up">↑ Alta</div>
+                </div>
+            </div>
+
+            <div class="cyber-card ai-copilot-card">
+                <div class="card-header ai-copilot-header u-cursor-pointer" onclick="toggleAthleteCopilot(this)">
+                    <div class="card-icon">🧠</div>
+                    <div class="card-title">COACH IA</div>
+                    <span class="ai-chevron">▼</span>
+                </div>
+                <div id="ai-athlete-panel" class="ai-copilot-body">
+                    <p class="text-small ai-copilot-placeholder">
+                        Pulsa el encabezado para expandir. El análisis se genera bajo demanda; revisa siempre antes de actuar.
+                    </p>
                 </div>
             </div>
             
@@ -1252,16 +300,16 @@
                         </div>
                     </div>
                 </div>
-                <div class="text-small" style="text-align: center; margin-top: 15px;">
+                <div class="text-small u-text-center u-mt-15">
                     *Zona sombreada: Retención hídrica prevista
                 </div>
             </div>
             
-            <div class="cyber-button secondary" onclick="openVault()" style="margin: 0 20px;">
+            <div class="cyber-button secondary u-mx-20" onclick="openVault()">
                 <span class="button-text">🔒 ABRIR PROTOCOLOS (SECURE)</span>
             </div>
             
-            <div class="cyber-card" style="margin-top: 20px;">
+            <div class="cyber-card u-mt-20">
                 <div class="card-header">
                     <div class="card-icon">📁</div>
                     <div class="card-title">HISTORIAL DE REPORTES</div>
@@ -1269,17 +317,17 @@
                 </div>
                 <div class="row">
                     <span class="text-chrome">📁 Revisión 30 Ene (Hoy)</span>
-                    <span class="text-neon" style="cursor: pointer;">👁️</span>
+                    <span class="text-neon u-cursor-pointer">👁️</span>
                 </div>
                 <div class="divider"></div>
                 <div class="row">
                     <span class="text-chrome">📁 Revisión 23 Ene</span>
-                    <span class="text-metal" style="cursor: pointer;">👁️</span>
+                    <span class="text-metal u-cursor-pointer">👁️</span>
                 </div>
                 <div class="divider"></div>
                 <div class="row">
                     <span class="text-chrome">📁 Revisión 15 Ene</span>
-                    <span class="text-metal" style="cursor: pointer;">👁️</span>
+                    <span class="text-metal u-cursor-pointer">👁️</span>
                 </div>
             </div>
 
@@ -1288,7 +336,7 @@
                     <div class="card-icon">💬</div>
                     <div class="card-title">NOTAS DEL ENTRENADOR</div>
                 </div>
-                <div class="text-chrome editable" onclick="editNotes()" style="min-height: 60px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                <div class="text-chrome editable u-notes-block" onclick="editNotes(this)">
                     Excelente adherencia al plan. Considerar aumentar carbohidratos en días de entrenamiento de pierna. Revisar hidratación pre-competición.
                 </div>
             </div>
@@ -1297,11 +345,15 @@
         <!-- CREADOR SCREEN -->
         <div class="screen" id="screen-creador">
             <div class="tab-header">
-                <div class="tab active" onclick="switchCreatorTab('diet')">DIETA 🍎</div>
-                <div class="tab" onclick="switchCreatorTab('train')">ENTRENO 🏋️</div>
+                <div class="tab active" onclick="switchCreatorTab('diet', this)">DIETA 🍎</div>
+                <div class="tab" onclick="switchCreatorTab('train', this)">ENTRENO 🏋️</div>
+            </div>
+            <div class="ai-creator-hint">
+                <button type="button" class="ai-hint-btn" onclick="showPlanAdjustmentsDemo()">🧠 Sugerencias de plan (copiloto)</button>
+                <span class="text-small">Propuestas no aplicadas automáticamente</span>
             </div>
             
-            <div id="creator-diet">
+            <div id="creator-diet" class="creator-pane">
                 <div class="variant-tabs">
                     <div class="variant-tab active" onclick="switchVariant(this)">DÍA A (Base)</div>
                     <div class="variant-tab" onclick="switchVariant(this)">DÍA B (Swap)</div>
@@ -1326,7 +378,7 @@
                     <div class="divider"></div>
                     <div class="row">
                         <span class="text-small">Macros: 60C / 35P / 2F • 398 kcal</span>
-                        <span class="text-metal" style="cursor: pointer;">✏️</span>
+                        <span class="text-metal u-cursor-pointer">✏️</span>
                     </div>
                 </div>
 
@@ -1351,7 +403,7 @@
                     <div class="divider"></div>
                     <div class="row">
                         <span class="text-small">Macros: 75C / 45P / 5F • 525 kcal</span>
-                        <span class="text-metal" style="cursor: pointer;">✏️</span>
+                        <span class="text-metal u-cursor-pointer">✏️</span>
                     </div>
                 </div>
                 
@@ -1382,7 +434,7 @@
                     </div>
                     <div class="row">
                         <span class="text-metal">Calorías Totales</span>
-                        <span class="text-neon" style="font-size: 20px;">2,145 kcal</span>
+                        <span class="text-neon u-fs-20">2,145 kcal</span>
                     </div>
                     <div class="divider"></div>
                     <div class="row">
@@ -1400,7 +452,7 @@
                 </div>
             </div>
             
-            <div id="creator-train" style="display: none;">
+            <div id="creator-train" class="creator-pane is-hidden">
                 <div class="variant-tabs">
                     <div class="variant-tab active" onclick="switchVariant(this)">EMPUJE A</div>
                     <div class="variant-tab" onclick="switchVariant(this)">TIRÓN A</div>
@@ -1419,8 +471,8 @@
                             <div class="text-chrome">Press Inclinado Multipower</div>
                             <div class="text-small">2 Top Set x 6-8 reps • RIR 2</div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20px; cursor: pointer;" class="tooltip" data-tooltip="Ver vídeo">🎥</span>
+                        <div class="u-flex-video-row">
+                            <span class="u-fs-20 u-cursor-pointer tooltip" data-tooltip="Ver vídeo">🎥</span>
                             <span class="text-neon editable">100kg</span>
                         </div>
                     </div>
@@ -1430,8 +482,8 @@
                             <div class="text-chrome">Press Militar con Barra</div>
                             <div class="text-small">3 x 8-10 reps • RIR 1-2</div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20px; cursor: pointer;" class="tooltip" data-tooltip="Ver vídeo">🎥</span>
+                        <div class="u-flex-video-row">
+                            <span class="u-fs-20 u-cursor-pointer tooltip" data-tooltip="Ver vídeo">🎥</span>
                             <span class="text-neon editable">60kg</span>
                         </div>
                     </div>
@@ -1441,8 +493,8 @@
                             <div class="text-chrome">Aperturas en Contractora</div>
                             <div class="text-small">3 x 12-15 reps • RIR 1</div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20px; cursor: pointer;" class="tooltip" data-tooltip="Ver vídeo">🎥</span>
+                        <div class="u-flex-video-row">
+                            <span class="u-fs-20 u-cursor-pointer tooltip" data-tooltip="Ver vídeo">🎥</span>
                             <span class="text-neon editable">45kg</span>
                         </div>
                     </div>
@@ -1453,7 +505,7 @@
                         <div class="card-icon">📝</div>
                         <div class="card-title">NOTAS DE EJECUCIÓN</div>
                     </div>
-                    <div class="text-small" style="line-height: 1.8;">
+                    <div class="text-small u-execution-notes">
                         • Priorizar técnica sobre carga en press inclinado<br>
                         • Mantener core activo durante press militar<br>
                         • Controlar la fase excéntrica en aperturas (3 segundos)<br>
@@ -1461,17 +513,17 @@
                     </div>
                 </div>
                 
-                <div class="text-small" style="text-align: center; padding: 20px; color: var(--metal-grey);">
+                <div class="text-small u-creator-footer-hint">
                     📹 Enlaces de vídeo incluidos para demostración técnica
                 </div>
             </div>
             
-            <div style="position: fixed; bottom: 80px; left: 0; right: 0; padding: 20px; background: rgba(0,0,0,0.95); border-top: 1px solid #222;">
-                <div style="display: flex; gap: 10px;">
-                    <div class="cyber-button secondary" style="flex: 1; margin: 0;" onclick="saveDraft()">
+            <div class="creator-sticky-bar">
+                <div class="creator-sticky-bar__actions">
+                    <div class="cyber-button secondary flex-1" onclick="saveDraft()">
                         <span class="button-text">💾 GUARDAR</span>
                     </div>
-                    <div class="cyber-button" style="flex: 2; margin: 0;" onclick="sendToClient()">
+                    <div class="cyber-button flex-2" onclick="sendToClient()">
                         <span class="button-text">📤 ENVIAR AL CLIENTE</span>
                     </div>
                 </div>
@@ -1492,7 +544,7 @@
                 
                 <div class="finance-row expandable" onclick="toggleExpenses()">
                     <span class="finance-label">(-) GASTOS OPERATIVOS <span id="expense-arrow">▼</span></span>
-                    <span class="finance-value" style="color: var(--metal-grey);">-1.200 €</span>
+                    <span class="finance-value finance-value--muted">-1.200 €</span>
                 </div>
                 
                 <div class="expenses-box" id="expenses-detail">
@@ -1508,19 +560,19 @@
                         <span class="text-small">🛒 Súper/Comida</span>
                         <span class="text-small editable" onclick="editExpense('comida')">-700 €</span>
                     </div>
-                    <div style="text-align: right; margin-top: 10px;">
-                        <span class="text-neon" style="font-size: 12px; cursor: pointer;" onclick="addExpense()">+ AÑADIR GASTO</span>
+                    <div class="u-text-right u-mt-10">
+                        <span class="text-neon u-fs-12 u-cursor-pointer" onclick="addExpense()">+ AÑADIR GASTO</span>
                     </div>
                 </div>
                 
-                <div style="height: 1px; background: #333; margin: 20px 0;"></div>
+                <div class="u-finance-divider"></div>
                 
                 <div class="finance-row">
-                    <span class="finance-label" style="font-size: 18px; font-weight: 700;">BENEFICIO NETO</span>
+                    <span class="finance-label u-beneficio-neto-label">BENEFICIO NETO</span>
                     <span class="finance-total">3.800 €</span>
                 </div>
 
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #222;">
+                <div class="u-finance-footer-block">
                     <div class="row">
                         <span class="text-small">Margen de beneficio</span>
                         <span class="text-neon">76%</span>
@@ -1551,18 +603,18 @@
                 </div>
             </div>
             
-            <div class="text-metal" style="margin: 20px 20px 10px 20px; font-weight: 600;">
+            <div class="text-metal u-section-label">
                 INCIDENCIAS DE COBRO
             </div>
             
             <div class="cyber-card">
-                <div class="row" style="align-items: flex-start;">
-                    <div style="flex: 1;">
-                        <div class="text-chrome" style="font-weight: 700;">Carlos Rodríguez</div>
-                        <div class="text-chrome" style="font-size: 12px;">
-                            Plan Trimestral • <span style="color: var(--danger);">RETRASO (+5 DÍAS)</span>
+                <div class="row u-row-start">
+                    <div class="u-client-block">
+                        <div class="text-chrome u-font-700">Carlos Rodríguez</div>
+                        <div class="text-chrome u-fs-12">
+                            Plan Trimestral • <span class="u-text-danger">RETRASO (+5 DÍAS)</span>
                         </div>
-                        <div class="text-small" style="margin-top: 5px;">
+                        <div class="text-small u-mt-5">
                             Último contacto: 25 Ene • Monto: 450€
                         </div>
                     </div>
@@ -1577,7 +629,7 @@
                     <div class="card-icon">📈</div>
                     <div class="card-title">PROYECCIÓN MENSUAL</div>
                 </div>
-                <div class="text-small" style="margin-bottom: 15px;">
+                <div class="text-small u-mb-15">
                     Basado en tus métricas actuales de retención y nuevos clientes
                 </div>
                 <div class="row">
@@ -1631,7 +683,7 @@
                 </div>
                 <div class="row">
                     <span class="text-chrome">Próxima recomendada</span>
-                    <span style="color: #FFB800;">15 Feb 2026</span>
+                    <span class="u-text-warning">15 Feb 2026</span>
                 </div>
                 <div class="divider"></div>
                 <div class="text-small">
@@ -1639,23 +691,23 @@
                 </div>
             </div>
             
-            <div class="cyber-card" style="border: 1px solid var(--chrome);">
+            <div class="cyber-card u-vault-neuro-card">
                 <div class="card-header">
-                    <div style="font-size: 24px; margin-right: 10px;">🧠</div>
+                    <div class="u-vault-neuro-icon">🧠</div>
                     <div class="card-title">NEURO-MODULATOR AI</div>
                 </div>
                 <div class="text-chrome">
                     ⚠️ El Clembuterol está activando el SNC nocturno.
                 </div>
                 <div class="ai-box">
-                    <div class="text-neon" style="font-weight: 700; margin-bottom: 8px;">
+                    <div class="text-neon u-ai-suggestion-title">
                         SUGERENCIA ACTIVADA:
                     </div>
                     <div class="text-chrome">+ 500mg Magnesio Bisglicinato</div>
                     <div class="text-chrome">+ 3g Glicina (Pre-cama)</div>
                     <div class="text-chrome">+ Considerar reducir dosis nocturna a 20mcg</div>
                 </div>
-                <div class="cyber-button secondary" style="margin-top: 15px;" onclick="applyAISuggestion()">
+                <div class="cyber-button secondary u-mt-15" onclick="applyAISuggestion()">
                     <span class="button-text">✓ APLICAR SUGERENCIA</span>
                 </div>
             </div>
@@ -1665,7 +717,7 @@
                     <div class="card-icon alert">⚠️</div>
                     <div class="card-title alert">ADVERTENCIA MÉDICA</div>
                 </div>
-                <div class="text-chrome" style="font-size: 13px; line-height: 1.8;">
+                <div class="text-chrome u-legal-disclaimer">
                     Esta información es confidencial y está protegida bajo secreto profesional. El uso de sustancias controladas debe realizarse exclusivamente bajo supervisión médica especializada y cumpliendo con la legislación vigente.
                 </div>
             </div>
@@ -1691,492 +743,26 @@
         
         <!-- BOTTOM NAVIGATION -->
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="switchScreen('inicio')">
+            <div class="nav-item active" data-nav-route="inicio" onclick="switchScreen('inicio', this)">
                 <div class="nav-icon">📡</div>
                 <div class="nav-label">INICIO</div>
             </div>
-            <div class="nav-item" onclick="switchScreen('atletas')">
+            <div class="nav-item" data-nav-route="atletas" onclick="switchScreen('atletas', this)">
                 <div class="nav-icon">👥</div>
                 <div class="nav-label">ATLETAS</div>
             </div>
-            <div class="nav-item" onclick="switchScreen('creador')">
+            <div class="nav-item" data-nav-route="creador" onclick="switchScreen('creador', this)">
                 <div class="nav-icon">⚙️</div>
                 <div class="nav-label">CREADOR</div>
             </div>
-            <div class="nav-item" onclick="switchScreen('oficina')">
+            <div class="nav-item" data-nav-route="oficina" onclick="switchScreen('oficina', this)">
                 <div class="nav-icon">💼</div>
                 <div class="nav-label">OFICINA</div>
             </div>
         </div>
+        </div>
     </div>
-    
-    <script>
-        // NAVIGATION
-        function switchScreen(screen) {
-            // Hide all screens
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            // Show selected screen
-            document.getElementById('screen-' + screen).classList.add('active');
-            
-            // Update nav items
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            
-            // Scroll to top
-            window.scrollTo(0, 0);
-        }
-        
-        // VAULT
-        function openVault() {
-            document.getElementById('vault').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeVault() {
-            document.getElementById('vault').classList.remove('open');
-            document.body.style.overflow = 'auto';
-        }
-        
-        // EXPENSES
-        function toggleExpenses() {
-            const box = document.getElementById('expenses-detail');
-            const arrow = document.getElementById('expense-arrow');
-            box.classList.toggle('open');
-            arrow.textContent = box.classList.contains('open') ? '▲' : '▼';
-        }
-        
-        // CREATOR TABS
-        function switchCreatorTab(tab) {
-            // Update tab buttons
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            
-            // Show/hide content
-            if (tab === 'diet') {
-                document.getElementById('creator-diet').style.display = 'block';
-                document.getElementById('creator-train').style.display = 'none';
-            } else {
-                document.getElementById('creator-diet').style.display = 'none';
-                document.getElementById('creator-train').style.display = 'block';
-            }
-        }
 
-        // VARIANT TABS
-        function switchVariant(element) {
-            document.querySelectorAll('.variant-tab').forEach(tab => {
-                if (tab !== element && !tab.textContent.includes('CREAR')) {
-                    tab.classList.remove('active');
-                }
-            });
-            if (!element.textContent.includes('CREAR')) {
-                element.classList.add('active');
-            }
-        }
-        
-        // COPY LINK
-        function copyLink() {
-            const link = 'https://titan-os.app/onboarding/new-client-' + Math.random().toString(36).substr(2, 9);
-            navigator.clipboard.writeText(link).then(() => {
-                showToast('✅ Enlace copiado al portapapeles');
-            }).catch(() => {
-                showModal('Enlace de Onboarding', 'Copia este enlace:\n\n' + link);
-            });
-        }
-
-        // ATHLETES
-        function filterAthletes(query) {
-            const items = document.querySelectorAll('.client-list-item');
-            items.forEach(item => {
-                const name = item.querySelector('.client-name').textContent.toLowerCase();
-                const status = item.querySelector('.client-status').textContent.toLowerCase();
-                if (name.includes(query.toLowerCase()) || status.includes(query.toLowerCase())) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        function viewAthlete(name) {
-            document.getElementById('athlete-detail-name').textContent = name;
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen-athlete-detail').classList.add('active');
-            window.scrollTo(0, 0);
-        }
-
-        function backToAthletes() {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen-atletas').classList.add('active');
-            window.scrollTo(0, 0);
-        }
-
-        // MODAL
-        function showModal(title, body, confirmText = 'CONFIRMAR', onConfirm = null) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-body').innerHTML = body;
-            document.getElementById('modal-confirm').querySelector('.button-text').textContent = confirmText;
-            
-            if (onConfirm) {
-                document.getElementById('modal-confirm').onclick = () => {
-                    onConfirm();
-                    closeModal();
-                };
-            } else {
-                document.getElementById('modal-confirm').onclick = closeModal;
-            }
-            
-            document.getElementById('modal').classList.add('open');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('open');
-        }
-
-        // TOAST (simulated with modal for simplicity)
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 100px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: var(--card);
-                color: var(--chrome);
-                padding: 15px 25px;
-                border-radius: 8px;
-                border: 1px solid var(--neon-blue);
-                box-shadow: 0 0 25px var(--neon-blue);
-                z-index: 10000;
-                font-family: 'Rajdhani', sans-serif;
-                font-weight: 600;
-                animation: slideUp 0.3s ease-out;
-            `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideDown 0.3s ease-out';
-                setTimeout(() => toast.remove(), 300);
-            }, 2500);
-        }
-
-        // ENHANCED FUNCTIONS
-        function dismissAlert(element) {
-            element.closest('.cyber-card').style.animation = 'cardEntry 0.3s ease-out reverse';
-            setTimeout(() => {
-                element.closest('.cyber-card').remove();
-            }, 300);
-        }
-
-        function contactClient(name) {
-            showModal(
-                'Contactar con ' + name,
-                `<div class="input-group">
-                    <label class="input-label">ASUNTO</label>
-                    <input type="text" class="cyber-input" placeholder="Revisión de rutina urgente" value="Revisión de progreso">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">MENSAJE</label>
-                    <textarea class="cyber-input" rows="4" placeholder="Escribe tu mensaje...">Hola ${name}, he notado que tu progreso se ha estancado. ¿Podemos agendar una llamada para ajustar tu plan?</textarea>
-                </div>`,
-                'ENVIAR MENSAJE',
-                () => showToast('📤 Mensaje enviado a ' + name)
-            );
-        }
-
-        function addEvent() {
-            showModal(
-                'Añadir Evento a la Agenda',
-                `<div class="input-group">
-                    <label class="input-label">HORA</label>
-                    <input type="time" class="cyber-input" value="14:00">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">DESCRIPCIÓN</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: Revisión con cliente">
-                </div>`,
-                'AÑADIR',
-                () => showToast('✅ Evento añadido a la agenda')
-            );
-        }
-
-        function completeTask(element) {
-            const row = element.closest('.row');
-            row.style.opacity = '0.5';
-            row.style.textDecoration = 'line-through';
-            element.textContent = '✓';
-            element.style.color = '#00FF88';
-            showToast('✅ Tarea completada');
-        }
-
-        function updateMetric(type) {
-            const titles = {
-                peso: 'Actualizar Peso',
-                cintura: 'Actualizar Medida de Cintura',
-                hambre: 'Registrar Nivel de Hambre'
-            };
-            const inputs = {
-                peso: '<input type="number" class="cyber-input" placeholder="64.5" step="0.1">',
-                cintura: '<input type="number" class="cyber-input" placeholder="60" step="0.5">',
-                hambre: '<input type="range" class="cyber-input" min="1" max="10" value="8" oninput="this.nextElementSibling.textContent = this.value"><span class="text-neon" style="display:block;text-align:center;margin-top:10px;">8</span>'
-            };
-            
-            showModal(
-                titles[type],
-                `<div class="input-group">
-                    <label class="input-label">NUEVO VALOR</label>
-                    ${inputs[type]}
-                </div>`,
-                'GUARDAR',
-                () => showToast('✅ Métrica actualizada correctamente')
-            );
-        }
-
-        function addProgressData() {
-            showModal(
-                'Añadir Datos de Progreso',
-                `<div class="input-group">
-                    <label class="input-label">PESO (kg)</label>
-                    <input type="number" class="cyber-input" placeholder="64.5" step="0.1">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">FECHA</label>
-                    <input type="date" class="cyber-input">
-                </div>`,
-                'AÑADIR',
-                () => showToast('✅ Datos añadidos al gráfico')
-            );
-        }
-
-        function createReport() {
-            showModal(
-                'Crear Nuevo Reporte',
-                `<div class="input-group">
-                    <label class="input-label">TÍTULO DEL REPORTE</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: Revisión Semanal">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">NOTAS</label>
-                    <textarea class="cyber-input" rows="4" placeholder="Observaciones del progreso..."></textarea>
-                </div>`,
-                'CREAR REPORTE',
-                () => showToast('✅ Reporte creado correctamente')
-            );
-        }
-
-        function editNotes() {
-            const currentNotes = event.currentTarget.textContent;
-            showModal(
-                'Editar Notas del Entrenador',
-                `<div class="input-group">
-                    <label class="input-label">NOTAS</label>
-                    <textarea class="cyber-input" rows="6">${currentNotes}</textarea>
-                </div>`,
-                'GUARDAR',
-                () => showToast('✅ Notas actualizadas')
-            );
-        }
-
-        function editMeal(number) {
-            showModal(
-                'Editar Comida ' + number,
-                `<div class="input-group">
-                    <label class="input-label">ALIMENTO</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: Arroz Basmati">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">CANTIDAD (g)</label>
-                    <input type="number" class="cyber-input" placeholder="100">
-                </div>
-                <div style="text-align:center;margin-top:15px;">
-                    <span class="text-neon" style="cursor:pointer;">+ Añadir otro alimento</span>
-                </div>`,
-                'GUARDAR CAMBIOS',
-                () => showToast('✅ Comida actualizada')
-            );
-        }
-
-        function addSupplement() {
-            showModal(
-                'Añadir Suplemento',
-                `<div class="input-group">
-                    <label class="input-label">SUPLEMENTO</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: Beta-Alanina">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">DOSIS Y MOMENTO</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: 3g (Pre-entreno)">
-                </div>`,
-                'AÑADIR',
-                () => showToast('✅ Suplemento añadido')
-            );
-        }
-
-        function addExercise() {
-            showModal(
-                'Añadir Ejercicio',
-                `<div class="input-group">
-                    <label class="input-label">EJERCICIO</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: Press Banca">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">SERIES x REPS</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: 3 x 8-10">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">CARGA (kg)</label>
-                    <input type="number" class="cyber-input" placeholder="80">
-                </div>`,
-                'AÑADIR EJERCICIO',
-                () => showToast('✅ Ejercicio añadido al plan')
-            );
-        }
-
-        function createNewVariant() {
-            showModal(
-                'Crear Nueva Variante',
-                `<div class="input-group">
-                    <label class="input-label">NOMBRE DE LA VARIANTE</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: DÍA D (Bajo)">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">DESCRIPCIÓN</label>
-                    <textarea class="cyber-input" rows="3" placeholder="Día bajo en carbohidratos para descanso activo"></textarea>
-                </div>`,
-                'CREAR',
-                () => showToast('✅ Nueva variante creada')
-            );
-        }
-
-        function saveDraft() {
-            showToast('💾 Borrador guardado correctamente');
-        }
-
-        function sendToClient() {
-            showModal(
-                'Enviar Plan al Cliente',
-                `<div class="input-group">
-                    <label class="input-label">SELECCIONAR CLIENTE</label>
-                    <select class="cyber-input">
-                        <option>Laura Pro</option>
-                        <option>Javi M.</option>
-                        <option>María S.</option>
-                        <option>Raúl C.</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label class="input-label">MENSAJE OPCIONAL</label>
-                    <textarea class="cyber-input" rows="3" placeholder="Añade un mensaje personalizado..."></textarea>
-                </div>`,
-                'ENVIAR AHORA',
-                () => showToast('📤 Plan enviado correctamente')
-            );
-        }
-
-        function editFinance(type) {
-            showModal(
-                'Editar Facturación',
-                `<div class="input-group">
-                    <label class="input-label">MONTO (€)</label>
-                    <input type="number" class="cyber-input" placeholder="5000" step="50">
-                </div>`,
-                'ACTUALIZAR',
-                () => showToast('✅ Facturación actualizada')
-            );
-        }
-
-        function editExpense(type) {
-            showModal(
-                'Editar Gasto',
-                `<div class="input-group">
-                    <label class="input-label">MONTO (€)</label>
-                    <input type="number" class="cyber-input" step="10">
-                </div>`,
-                'ACTUALIZAR',
-                () => showToast('✅ Gasto actualizado')
-            );
-        }
-
-        function addExpense() {
-            showModal(
-                'Añadir Nuevo Gasto',
-                `<div class="input-group">
-                    <label class="input-label">CONCEPTO</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: Marketing digital">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">MONTO (€)</label>
-                    <input type="number" class="cyber-input" placeholder="150" step="10">
-                </div>`,
-                'AÑADIR GASTO',
-                () => showToast('✅ Gasto añadido')
-            );
-        }
-
-        function claimPayment() {
-            showModal(
-                'Reclamar Pago',
-                `<p class="text-chrome">¿Deseas enviar un recordatorio de pago a Carlos Rodríguez?</p>
-                <p class="text-small" style="margin-top:10px;">Se enviará un mensaje automático con los detalles del pago pendiente.</p>`,
-                'ENVIAR RECORDATORIO',
-                () => showToast('📧 Recordatorio de pago enviado')
-            );
-        }
-
-        function editProtocol() {
-            showModal(
-                'Editar Protocolo',
-                `<div class="input-group">
-                    <label class="input-label">COMPUESTO</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: PRIMOBOLAN">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">DOSIFICACIÓN</label>
-                    <input type="text" class="cyber-input" placeholder="Ej: 200mg/sem">
-                </div>`,
-                'GUARDAR CAMBIOS',
-                () => showToast('✅ Protocolo actualizado')
-            );
-        }
-
-        function applyAISuggestion() {
-            showToast('🤖 Sugerencia de IA aplicada al protocolo');
-        }
-
-        function showNotifications() {
-            showModal(
-                '🔔 Notificaciones',
-                `<div style="max-height: 300px; overflow-y: auto;">
-                    <div class="cyber-card" style="margin: 10px 0; padding: 15px;">
-                        <div class="text-chrome" style="font-weight:700;">Check-in recibido</div>
-                        <div class="text-small">Javi M. ha enviado su check-in semanal • Hace 2 horas</div>
-                    </div>
-                    <div class="cyber-card" style="margin: 10px 0; padding: 15px;">
-                        <div class="text-chrome" style="font-weight:700;">Pago confirmado</div>
-                        <div class="text-small">María S. - Plan mensual • Hace 5 horas</div>
-                    </div>
-                    <div class="cyber-card alert" style="margin: 10px 0; padding: 15px;">
-                        <div class="text-chrome" style="font-weight:700;">Alerta de progreso</div>
-                        <div class="text-small">Carlos R. sin cambios significativos • Hace 1 día</div>
-                    </div>
-                </div>`,
-                'CERRAR'
-            );
-        }
-
-        // Add CSS for slide animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideUp {
-                from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-                to { transform: translateX(-50%) translateY(0); opacity: 1; }
-            }
-            @keyframes slideDown {
-                from { transform: translateX(-50%) translateY(0); opacity: 1; }
-                to { transform: translateX(-50%) translateY(20px); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
