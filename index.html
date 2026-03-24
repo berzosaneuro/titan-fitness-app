@@ -2,8 +2,22 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA: en producción sirve el sitio solo por HTTPS (localhost permitido para desarrollo). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5">
+    <meta name="theme-color" content="#000000">
+    <meta name="color-scheme" content="dark">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="TITAN">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>TITAN OS — Acceso coach</title>
+    <link rel="manifest" href="public/manifest.json">
+    <link rel="icon" type="image/png" sizes="512x512" href="public/icons/icon-512.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="public/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="public/icons/favicon.png">
+    <link rel="apple-touch-icon" href="public/icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="public/icons/icon-180.png">
+    <meta name="msapplication-TileImage" content="public/icons/icon-512.png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -11,40 +25,46 @@
     <div id="auth-screen" class="layer is-active" aria-hidden="false">
         <div class="auth-layout">
             <div class="auth-brand">
+                <img src="public/icons/icon-180.png" alt="" class="titan-brand-icon titan-brand-icon--auth" width="96" height="96" decoding="async">
                 <div class="auth-brand__title">TITAN <span class="version">OS</span></div>
                 <p class="auth-brand__tagline">Copiloto operativo para entrenadores</p>
             </div>
             <form id="auth-login-form" class="auth-card cyber-card" novalidate>
                 <div class="card-header">
                     <div class="card-icon">🔐</div>
-                    <div class="card-title">ACCESO COACH</div>
+                    <div class="card-title">Acceso coach</div>
                 </div>
-                <div id="auth-error" class="auth-error is-hidden" role="alert"></div>
+                <p class="text-small auth-card__hint">Correo y contraseña · sesión segura con Supabase</p>
+                <div id="auth-error" class="auth-error is-hidden" role="alert" aria-live="polite"></div>
+                <div id="auth-info" class="auth-info is-hidden" role="status" aria-live="polite"></div>
                 <div class="input-group">
-                    <label class="input-label" for="auth-email">EMAIL</label>
-                    <input id="auth-email" class="cyber-input" type="email" autocomplete="username" placeholder="coach@titan.app">
+                    <label class="input-label" for="auth-email">Correo electrónico</label>
+                    <input id="auth-email" class="cyber-input" type="email" name="email" autocomplete="username" inputmode="email" placeholder="tu@email.com" required>
                 </div>
                 <div class="input-group">
-                    <label class="input-label" for="auth-password">CONTRASEÑA</label>
-                    <input id="auth-password" class="cyber-input" type="password" autocomplete="current-password" placeholder="••••••••">
+                    <label class="input-label" for="auth-password">Contraseña</label>
+                    <input id="auth-password" class="cyber-input" type="password" name="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres" minlength="6" required>
                 </div>
-                <button type="submit" id="auth-submit" class="cyber-button auth-submit-btn">
-                    <span class="button-text" id="auth-submit-label">ACCEDER</span>
-                </button>
-                <div class="auth-divider"><span>o</span></div>
-                <button type="button" id="auth-demo-btn" class="cyber-button secondary auth-demo-btn">
-                    <span class="button-text">MODO DEMO</span>
-                </button>
-                <p class="text-small auth-hint">Demo con credenciales: <strong>coach@titan.app</strong> · <strong>Titan2025!</strong> — o entra sin contraseña con Modo demo.</p>
+                <div class="auth-actions">
+                    <button type="submit" id="auth-submit" class="cyber-button auth-actions__primary">
+                        <span class="button-text" id="auth-submit-label">Iniciar sesión</span>
+                    </button>
+                    <button type="button" id="auth-register-btn" class="cyber-button secondary auth-actions__secondary">
+                        <span class="button-text" id="auth-register-label">Crear cuenta</span>
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
     <div id="app-screen" class="layer" aria-hidden="true">
         <header class="app-user-bar">
-            <div class="app-user-bar__meta">
-                <span class="app-user-bar__label">Sesión</span>
-                <span id="app-user-display" class="app-user-bar__email">—</span>
+            <div class="app-user-bar__left">
+                <img src="public/icons/icon-180.png" alt="" class="titan-brand-icon titan-brand-icon--bar" width="36" height="36" decoding="async">
+                <div class="app-user-bar__meta">
+                    <span class="app-user-bar__label">Sesión</span>
+                    <span id="app-user-display" class="app-user-bar__email">—</span>
+                </div>
             </div>
             <button type="button" class="auth-logout-btn" id="auth-logout-btn">Cerrar sesión</button>
         </header>
@@ -52,8 +72,9 @@
         <!-- INICIO SCREEN -->
         <div class="screen active" id="screen-inicio">
             <div class="header">
-                <div class="header-title">
-                    TITAN OS <span class="version">v3.0</span>
+                <div class="header-title header-title--with-mark">
+                    <img src="public/icons/icon-180.png" alt="" class="titan-brand-icon titan-brand-icon--header" width="44" height="44" decoding="async">
+                    <span class="header-title__text">TITAN OS <span class="version">v3.0</span></span>
                 </div>
                 <div class="icon-3d tooltip" data-tooltip="3 notificaciones" onclick="showNotifications()">
                     🔔
@@ -77,6 +98,9 @@
                     El copiloto prioriza y explica; no envía mensajes ni cambia planes sin tu acción.
                 </div>
             </div>
+
+            <div id="enterprise-kpi-strip" class="enterprise-kpi-strip" aria-label="KPIs negocio"></div>
+            <div id="enterprise-alert-rail" class="enterprise-alert-rail" aria-label="Alertas operativas"></div>
             
             <div class="cyber-card alert" style="animation-delay: 0.1s;">
                 <div class="card-header">
@@ -168,6 +192,10 @@
         
         <!-- ATLETAS SCREEN -->
         <div class="screen" id="screen-atletas">
+            <div class="screen-brand-strip">
+                <img src="public/icons/icon-180.png" alt="" class="titan-brand-icon titan-brand-icon--strip" width="36" height="36" decoding="async">
+                <span class="screen-brand-strip__title">ATLETAS</span>
+            </div>
             <div class="search-container">
                 <input type="text" class="search-input" placeholder="🔍 Buscar atleta..." oninput="filterAthletes(this.value)">
             </div>
@@ -218,11 +246,14 @@
         <!-- ATHLETE DETAIL -->
         <div class="screen" id="screen-athlete-detail">
             <div class="header">
-                <div class="avatar-container">
-                    <div class="avatar-3d">👩</div>
-                    <div class="athlete-info">
-                        <h2 id="athlete-detail-name">Laura Pro</h2>
-                        <div class="athlete-status">WELLNESS • 2 WEEKS OUT</div>
+                <div class="header__athlete-start">
+                    <img src="public/icons/icon-180.png" alt="" class="titan-brand-icon titan-brand-icon--athlete" width="34" height="34" decoding="async">
+                    <div class="avatar-container">
+                        <div class="avatar-3d">👩</div>
+                        <div class="athlete-info">
+                            <h2 id="athlete-detail-name">Laura Pro</h2>
+                            <div class="athlete-status">WELLNESS • 2 WEEKS OUT</div>
+                        </div>
                     </div>
                 </div>
                 <div class="close-btn close-btn--square" onclick="backToAthletes()">←</div>
@@ -244,6 +275,74 @@
                     <div class="value-chrome">8/10</div>
                     <div class="trend up">↑ Alta</div>
                 </div>
+            </div>
+
+            <div class="cyber-card u-mt-15" id="training-telemetry-card">
+                <div class="card-header">
+                    <div class="card-icon">📡</div>
+                    <div class="card-title">TELEMETRÍA · SUPABASE</div>
+                    <span id="tt-offline-badge" class="text-small u-text-danger is-hidden" aria-live="polite"></span>
+                    <span id="tt-queue-count" class="text-small text-chrome" aria-live="polite"></span>
+                </div>
+                <p id="tt-session-banner" class="text-small text-chrome u-mb-10">—</p>
+                <p class="text-small text-chrome u-mb-10">
+                    Introduce lecturas reales (observación, wearables externos, etc.). La cola local conserva muestras sin red hasta sincronizar.
+                </p>
+                <div class="live-panel">
+                    <div class="live-item">
+                        <div class="label-neon">CNS‑R</div>
+                        <div class="value-chrome" id="tt-val-cnsr">—</div>
+                    </div>
+                    <div class="live-item">
+                        <div class="label-neon">ICO</div>
+                        <div class="value-chrome" id="tt-val-ico">—</div>
+                    </div>
+                    <div class="live-item">
+                        <div class="label-neon">RIESGO</div>
+                        <div class="value-chrome" id="tt-val-risk">—</div>
+                    </div>
+                    <div class="live-item">
+                        <div class="label-neon">FC</div>
+                        <div class="value-chrome" id="tt-val-hr">—</div>
+                    </div>
+                </div>
+                <div class="input-group u-mt-10">
+                    <label class="input-label" for="tt-input-cnsr">CNS‑R (0–100)</label>
+                    <input id="tt-input-cnsr" class="cyber-input" type="number" min="0" max="100" step="1" placeholder="Ej. 78">
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="tt-input-ico">ICO (0–100)</label>
+                    <input id="tt-input-ico" class="cyber-input" type="number" min="0" max="100" step="1" placeholder="Ej. 82">
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="tt-input-risk">Riesgo lesión (0–100)</label>
+                    <input id="tt-input-risk" class="cyber-input" type="number" min="0" max="100" step="1" placeholder="Ej. 12">
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="tt-input-hr">FC (opcional)</label>
+                    <input id="tt-input-hr" class="cyber-input" type="number" min="30" max="220" step="1" placeholder="lpm">
+                </div>
+                <div class="auth-actions u-mt-10" style="flex-wrap: wrap; gap: 8px;">
+                    <button type="button" id="tt-btn-start" class="cyber-button auth-actions__primary"><span class="button-text">Iniciar sesión</span></button>
+                    <button type="button" id="tt-btn-complete" class="cyber-button secondary" disabled><span class="button-text">Finalizar</span></button>
+                    <button type="button" id="tt-btn-abort" class="cyber-button secondary" disabled><span class="button-text">Abortar</span></button>
+                    <button type="button" id="tt-btn-sample" class="cyber-button secondary" disabled><span class="button-text">Registrar muestra</span></button>
+                </div>
+                <p id="tt-hint" class="text-small u-mt-10" role="status" aria-live="polite"></p>
+                <div class="input-group u-mt-15">
+                    <label class="input-label" for="tt-note-body">Nota (tabla notes)</label>
+                    <textarea id="tt-note-body" class="cyber-input" rows="3" placeholder="Observaciones de la sesión…"></textarea>
+                </div>
+                <button type="button" id="tt-btn-save-note" class="cyber-button secondary u-mt-8"><span class="button-text">Guardar nota</span></button>
+                <div class="input-group u-mt-15">
+                    <label class="input-label" for="tt-injury-desc">Lesión — descripción</label>
+                    <input id="tt-injury-desc" class="cyber-input" type="text" placeholder="Descripción breve">
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="tt-injury-severity">Gravedad (numérico)</label>
+                    <input id="tt-injury-severity" class="cyber-input" type="number" min="0" max="10" step="0.1" placeholder="0–10">
+                </div>
+                <button type="button" id="tt-btn-injury" class="cyber-button secondary u-mt-8"><span class="button-text">Registrar lesión</span></button>
             </div>
 
             <div class="cyber-card ai-copilot-card">
@@ -344,112 +443,265 @@
         
         <!-- CREADOR SCREEN -->
         <div class="screen" id="screen-creador">
+            <div class="creador-brand-bar">
+                <img src="public/icons/icon-180.png" alt="" class="titan-brand-icon titan-brand-icon--strip" width="32" height="32" decoding="async">
+                <span class="creador-brand-bar__title">CREADOR</span>
+            </div>
             <div class="tab-header">
                 <div class="tab active" onclick="switchCreatorTab('diet', this)">DIETA 🍎</div>
                 <div class="tab" onclick="switchCreatorTab('train', this)">ENTRENO 🏋️</div>
             </div>
             <div class="ai-creator-hint">
-                <button type="button" class="ai-hint-btn" onclick="showPlanAdjustmentsDemo()">🧠 Sugerencias de plan (copiloto)</button>
+                <button type="button" class="ai-hint-btn" onclick="showPlanAdjustments()">🧠 Sugerencias de plan (copiloto)</button>
                 <span class="text-small">Propuestas no aplicadas automáticamente</span>
             </div>
             
-            <div id="creator-diet" class="creator-pane">
+            <div id="creator-diet" class="creator-pane"
+                 data-target-kcal="2200"
+                 data-target-p="165"
+                 data-target-c="280"
+                 data-target-f="40">
                 <div class="variant-tabs">
                     <div class="variant-tab active" onclick="switchVariant(this)">DÍA A (Base)</div>
                     <div class="variant-tab" onclick="switchVariant(this)">DÍA B (Swap)</div>
                     <div class="variant-tab" onclick="switchVariant(this)">DÍA C (Alto)</div>
                     <div class="variant-tab" onclick="createNewVariant()">+ CREAR</div>
                 </div>
-                
-                <div class="cyber-card">
-                    <div class="card-header">
-                        <div class="card-icon">🌅</div>
-                        <div class="card-title">COMIDA 1 (Pre-Entreno)</div>
-                        <div class="card-action tooltip" data-tooltip="Editar comida" onclick="editMeal(1)">✏️</div>
+
+                <div class="creator-enterprise-bar cyber-card">
+                    <div class="creator-enterprise-bar__top">
+                        <div>
+                            <span class="creator-enterprise-bar__label">MODO EMPRESA · PLAN ACTIVO</span>
+                            <button type="button" class="creator-pick-btn" id="creator-pick-athlete">Laura Pro ▾</button>
+                        </div>
+                        <span class="creator-phase-pill" id="creator-phase-pill">CUTTING</span>
+                        <button type="button" class="creator-pick-btn creator-pick-btn--ghost" id="creator-pick-phase">Fase: Cutting ▾</button>
                     </div>
-                    <div class="row">
-                        <span class="text-chrome editable">Crema de Arroz</span>
-                        <span class="text-neon editable">80g</span>
-                    </div>
-                    <div class="row">
-                        <span class="text-chrome editable">Proteína ISO</span>
-                        <span class="text-neon editable">40g</span>
-                    </div>
-                    <div class="divider"></div>
-                    <div class="row">
-                        <span class="text-small">Macros: 60C / 35P / 2F • 398 kcal</span>
-                        <span class="text-metal u-cursor-pointer">✏️</span>
+                    <p class="text-small text-metal creator-enterprise-bar__hint">Objetivos del atleta (aislado por tenant en backend). Editar aquí recalcula el dock en vivo.</p>
+                    <div class="creator-targets-grid">
+                        <label class="creator-target"><span class="creator-target__l">kcal</span><input type="number" id="creator-target-kcal" class="cyber-input cyber-input--compact" min="0" step="10" value="2200"></label>
+                        <label class="creator-target"><span class="creator-target__l">Prot (g)</span><input type="number" id="creator-target-p" class="cyber-input cyber-input--compact" min="0" step="1" value="165"></label>
+                        <label class="creator-target"><span class="creator-target__l">Carb (g)</span><input type="number" id="creator-target-c" class="cyber-input cyber-input--compact" min="0" step="1" value="280"></label>
+                        <label class="creator-target"><span class="creator-target__l">Grasa (g)</span><input type="number" id="creator-target-f" class="cyber-input cyber-input--compact" min="0" step="1" value="40"></label>
                     </div>
                 </div>
 
-                <div class="cyber-card">
-                    <div class="card-header">
-                        <div class="card-icon">🍽️</div>
-                        <div class="card-title">COMIDA 2 (Post-Entreno)</div>
-                        <div class="card-action tooltip" data-tooltip="Editar comida" onclick="editMeal(2)">✏️</div>
+                <div class="macro-dock cyber-card">
+                    <div class="macro-dock__head">
+                        <div>
+                            <div class="macro-dock__title">BALANCE DIARIO</div>
+                            <p class="text-small macro-dock__sub">Actualización en vivo según gramos · Objetivo: <span id="diet-target-summary">2200 kcal · 165P · 280C · 40F</span></p>
+                        </div>
+                        <div class="diet-feedback" id="diet-feedback" aria-live="polite"></div>
                     </div>
-                    <div class="row">
-                        <span class="text-chrome editable">Arroz Basmati</span>
-                        <span class="text-neon editable">100g</span>
+                    <div class="macro-dock__rings">
+                        <div class="macro-tile macro-tile--kcal">
+                            <div class="macro-tile__value" id="macro-total-kcal">0</div>
+                            <div class="macro-tile__label">kcal</div>
+                            <div class="macro-tile__bar"><span id="macro-bar-kcal"></span></div>
+                            <div class="macro-tile__pct" id="macro-pct-kcal">—</div>
+                        </div>
+                        <div class="macro-tile macro-tile--p">
+                            <div class="macro-tile__value" id="macro-total-p">0</div>
+                            <div class="macro-tile__label">Proteína (g)</div>
+                            <div class="macro-tile__bar macro-tile__bar--p"><span id="macro-bar-p"></span></div>
+                            <div class="macro-tile__pct" id="macro-pct-p">—</div>
+                        </div>
+                        <div class="macro-tile macro-tile--c">
+                            <div class="macro-tile__value" id="macro-total-c">0</div>
+                            <div class="macro-tile__label">Carbs (g)</div>
+                            <div class="macro-tile__bar macro-tile__bar--c"><span id="macro-bar-c"></span></div>
+                            <div class="macro-tile__pct" id="macro-pct-c">—</div>
+                        </div>
+                        <div class="macro-tile macro-tile--f">
+                            <div class="macro-tile__value" id="macro-total-f">0</div>
+                            <div class="macro-tile__label">Grasas (g)</div>
+                            <div class="macro-tile__bar macro-tile__bar--f"><span id="macro-bar-f"></span></div>
+                            <div class="macro-tile__pct" id="macro-pct-f">—</div>
+                        </div>
                     </div>
-                    <div class="row">
-                        <span class="text-chrome editable">Pechuga de Pollo</span>
-                        <span class="text-neon editable">150g</span>
-                    </div>
-                    <div class="row">
-                        <span class="text-chrome editable">Verduras Mixtas</span>
-                        <span class="text-neon editable">200g</span>
-                    </div>
-                    <div class="divider"></div>
-                    <div class="row">
-                        <span class="text-small">Macros: 75C / 45P / 5F • 525 kcal</span>
-                        <span class="text-metal u-cursor-pointer">✏️</span>
-                    </div>
-                </div>
-                
-                <div class="cyber-card">
-                    <div class="card-header">
-                        <div class="card-icon">⚡</div>
-                        <div class="card-title">SUPLEMENTACIÓN PERI-ENTRENO</div>
-                        <div class="card-action tooltip" data-tooltip="Añadir suplemento" onclick="addSupplement()">+</div>
-                    </div>
-                    <div class="row">
-                        <span class="text-chrome">Ciclodextrina</span>
-                        <span class="text-neon">30g (Intra)</span>
-                    </div>
-                    <div class="row">
-                        <span class="text-chrome">EAA's (Esenciales)</span>
-                        <span class="text-neon">15g (Intra)</span>
-                    </div>
-                    <div class="row">
-                        <span class="text-chrome">Creatina</span>
-                        <span class="text-neon">5g (Post)</span>
+                    <div class="macro-dock__split" id="macro-energy-split">
+                        <span class="macro-split__item" id="macro-split-p">P —%</span>
+                        <span class="macro-split__item" id="macro-split-c">C —%</span>
+                        <span class="macro-split__item" id="macro-split-f">F —%</span>
                     </div>
                 </div>
 
-                <div class="cyber-card">
+                <div class="cyber-card creator-ai-surface" id="creator-diet-copilot">
                     <div class="card-header">
-                        <div class="card-icon">🎯</div>
-                        <div class="card-title">TOTALES DIARIOS</div>
+                        <div class="card-icon">🧠</div>
+                        <div class="card-title">COPILOTO · DIETA</div>
                     </div>
-                    <div class="row">
-                        <span class="text-metal">Calorías Totales</span>
-                        <span class="text-neon u-fs-20">2,145 kcal</span>
-                    </div>
-                    <div class="divider"></div>
-                    <div class="row">
-                        <span class="text-chrome">Proteínas</span>
-                        <span class="text-neon">165g (31%)</span>
-                    </div>
-                    <div class="row">
-                        <span class="text-chrome">Carbohidratos</span>
-                        <span class="text-neon">285g (53%)</span>
-                    </div>
-                    <div class="row">
-                        <span class="text-chrome">Grasas</span>
-                        <span class="text-neon">38g (16%)</span>
-                    </div>
+                    <div id="creator-diet-copilot-body" class="creator-ai-surface__body"></div>
+                    <p class="text-small ai-disclaimer u-mt-8">Sugerencias con “por qué”. No modifica gramos ni alimentos.</p>
                 </div>
+
+                <article class="meal-card cyber-card" data-meal="1">
+                    <header class="meal-card__header">
+                        <div class="meal-card__icon">🌅</div>
+                        <div class="meal-card__meta">
+                            <h3 class="meal-card__title">Comida 1 · Pre-entreno</h3>
+                            <span class="meal-card__tag">07:30 · Alto en carb, fácil digestión</span>
+                        </div>
+                        <button type="button" class="meal-card__action tooltip" data-tooltip="Editar bloque" onclick="editMeal(1)">✏️</button>
+                    </header>
+                    <div class="meal-card__body">
+                        <div class="diet-food-row" data-food-id="rice_cream" data-p100="8.75" data-c100="56.25" data-f100="2.5" data-k100="275">
+                            <button type="button" class="diet-food-pick">
+                                <span class="diet-food-pick__name">Crema de arroz</span>
+                                <span class="diet-food-pick__meta">8,75P · 56,25C · 2,5F · 275 kcal/100g</span>
+                                <span class="diet-food-pick__chev" aria-hidden="true">▾</span>
+                            </button>
+                            <div class="diet-food-row__grams">
+                                <input type="number" class="diet-grams-input" min="0" step="1" value="80" aria-label="Gramos crema de arroz">
+                                <span class="diet-food-row__unit">g</span>
+                            </div>
+                            <div class="diet-food-row__mini"><span class="dfr-k">0</span> kcal · <span class="dfr-p">0</span>P · <span class="dfr-c">0</span>C · <span class="dfr-f">0</span>F</div>
+                        </div>
+                        <div class="diet-food-row" data-food-id="whey_iso" data-p100="87.5" data-c100="12.5" data-f100="2.5" data-k100="400">
+                            <button type="button" class="diet-food-pick">
+                                <span class="diet-food-pick__name">Proteína ISO</span>
+                                <span class="diet-food-pick__meta">87,5P · 12,5C · 2,5F · 400 kcal/100g</span>
+                                <span class="diet-food-pick__chev" aria-hidden="true">▾</span>
+                            </button>
+                            <div class="diet-food-row__grams">
+                                <input type="number" class="diet-grams-input" min="0" step="1" value="40" aria-label="Gramos proteína">
+                                <span class="diet-food-row__unit">g</span>
+                            </div>
+                            <div class="diet-food-row__mini"><span class="dfr-k">0</span> kcal · <span class="dfr-p">0</span>P · <span class="dfr-c">0</span>C · <span class="dfr-f">0</span>F</div>
+                        </div>
+                    </div>
+                    <div class="meal-card__tools">
+                        <button type="button" class="meal-card__add-food" data-meal="1">+ Añadir alimento al bloque</button>
+                    </div>
+                    <footer class="meal-card__footer">
+                        <span class="meal-card__sum-label">Subtotal comida</span>
+                        <span class="meal-card__sum" data-meal-sum="1">0 kcal · 0P / 0C / 0F</span>
+                    </footer>
+                </article>
+
+                <article class="meal-card cyber-card" data-meal="2">
+                    <header class="meal-card__header">
+                        <div class="meal-card__icon">🍽️</div>
+                        <div class="meal-card__meta">
+                            <h3 class="meal-card__title">Comida 2 · Post-entreno</h3>
+                            <span class="meal-card__tag">11:45 · Reposición glucógeno + proteína</span>
+                        </div>
+                        <button type="button" class="meal-card__action tooltip" data-tooltip="Editar bloque" onclick="editMeal(2)">✏️</button>
+                    </header>
+                    <div class="meal-card__body">
+                        <div class="diet-food-row" data-food-id="rice_cooked" data-p100="2.7" data-c100="28" data-f100="0.5" data-k100="130">
+                            <button type="button" class="diet-food-pick">
+                                <span class="diet-food-pick__name">Arroz basmati (cocido)</span>
+                                <span class="diet-food-pick__meta">2,7P · 28C · 0,5F · 130 kcal/100g</span>
+                                <span class="diet-food-pick__chev" aria-hidden="true">▾</span>
+                            </button>
+                            <div class="diet-food-row__grams">
+                                <input type="number" class="diet-grams-input" min="0" step="1" value="100" aria-label="Gramos arroz">
+                                <span class="diet-food-row__unit">g</span>
+                            </div>
+                            <div class="diet-food-row__mini"><span class="dfr-k">0</span> kcal · <span class="dfr-p">0</span>P · <span class="dfr-c">0</span>C · <span class="dfr-f">0</span>F</div>
+                        </div>
+                        <div class="diet-food-row" data-food-id="chicken_breast" data-p100="23" data-c100="0" data-f100="3.5" data-k100="165">
+                            <button type="button" class="diet-food-pick">
+                                <span class="diet-food-pick__name">Pechuga de pollo</span>
+                                <span class="diet-food-pick__meta">23P · 0C · 3,5F · 165 kcal/100g</span>
+                                <span class="diet-food-pick__chev" aria-hidden="true">▾</span>
+                            </button>
+                            <div class="diet-food-row__grams">
+                                <input type="number" class="diet-grams-input" min="0" step="1" value="150" aria-label="Gramos pollo">
+                                <span class="diet-food-row__unit">g</span>
+                            </div>
+                            <div class="diet-food-row__mini"><span class="dfr-k">0</span> kcal · <span class="dfr-p">0</span>P · <span class="dfr-c">0</span>C · <span class="dfr-f">0</span>F</div>
+                        </div>
+                        <div class="diet-food-row" data-food-id="veg_mix" data-p100="1.5" data-c100="3.5" data-f100="0.2" data-k100="25">
+                            <button type="button" class="diet-food-pick">
+                                <span class="diet-food-pick__name">Verduras mixtas</span>
+                                <span class="diet-food-pick__meta">1,5P · 3,5C · 0,2F · 25 kcal/100g</span>
+                                <span class="diet-food-pick__chev" aria-hidden="true">▾</span>
+                            </button>
+                            <div class="diet-food-row__grams">
+                                <input type="number" class="diet-grams-input" min="0" step="1" value="200" aria-label="Gramos verduras">
+                                <span class="diet-food-row__unit">g</span>
+                            </div>
+                            <div class="diet-food-row__mini"><span class="dfr-k">0</span> kcal · <span class="dfr-p">0</span>P · <span class="dfr-c">0</span>C · <span class="dfr-f">0</span>F</div>
+                        </div>
+                    </div>
+                    <div class="meal-card__tools">
+                        <button type="button" class="meal-card__add-food" data-meal="2">+ Añadir alimento al bloque</button>
+                    </div>
+                    <footer class="meal-card__footer">
+                        <span class="meal-card__sum-label">Subtotal comida</span>
+                        <span class="meal-card__sum" data-meal-sum="2">0 kcal · 0P / 0C / 0F</span>
+                    </footer>
+                </article>
+
+                <article class="meal-card cyber-card meal-card--supp" data-meal="supp">
+                    <header class="meal-card__header">
+                        <div class="meal-card__icon">⚡</div>
+                        <div class="meal-card__meta">
+                            <h3 class="meal-card__title">Peri-entreno & micro</h3>
+                            <span class="meal-card__tag">Intra / post · Cuenta en totales</span>
+                        </div>
+                        <button type="button" class="meal-card__action tooltip" data-tooltip="Añadir suplemento" onclick="addSupplement()">+</button>
+                    </header>
+                    <div class="meal-card__body">
+                        <div class="diet-food-row" data-food-id="cyclodextrin" data-p100="0" data-c100="95" data-f100="0" data-k100="380">
+                            <button type="button" class="diet-food-pick">
+                                <span class="diet-food-pick__name">Ciclodextrina</span>
+                                <span class="diet-food-pick__meta">0P · 95C · 0F · 380 kcal/100g</span>
+                                <span class="diet-food-pick__chev" aria-hidden="true">▾</span>
+                            </button>
+                            <div class="diet-food-row__grams">
+                                <input type="number" class="diet-grams-input" min="0" step="1" value="30" aria-label="Gramos ciclodextrina">
+                                <span class="diet-food-row__unit">g</span>
+                            </div>
+                            <div class="diet-food-row__mini"><span class="dfr-k">0</span> kcal · <span class="dfr-p">0</span>P · <span class="dfr-c">0</span>C · <span class="dfr-f">0</span>F</div>
+                        </div>
+                        <div class="diet-food-row" data-food-id="eaa" data-p100="80" data-c100="5" data-f100="0" data-k100="350">
+                            <button type="button" class="diet-food-pick">
+                                <span class="diet-food-pick__name">EAA (polvo)</span>
+                                <span class="diet-food-pick__meta">80P · 5C · 0F · 350 kcal/100g</span>
+                                <span class="diet-food-pick__chev" aria-hidden="true">▾</span>
+                            </button>
+                            <div class="diet-food-row__grams">
+                                <input type="number" class="diet-grams-input" min="0" step="1" value="15" aria-label="Gramos EAA">
+                                <span class="diet-food-row__unit">g</span>
+                            </div>
+                            <div class="diet-food-row__mini"><span class="dfr-k">0</span> kcal · <span class="dfr-p">0</span>P · <span class="dfr-c">0</span>C · <span class="dfr-f">0</span>F</div>
+                        </div>
+                        <div class="diet-food-row" data-food-id="creatine" data-p100="0" data-c100="0" data-f100="0" data-k100="0">
+                            <button type="button" class="diet-food-pick">
+                                <span class="diet-food-pick__name">Creatina monohidrato</span>
+                                <span class="diet-food-pick__meta">Sin aporte calórico relevante</span>
+                                <span class="diet-food-pick__chev" aria-hidden="true">▾</span>
+                            </button>
+                            <div class="diet-food-row__grams">
+                                <input type="number" class="diet-grams-input" min="0" step="1" value="5" aria-label="Gramos creatina">
+                                <span class="diet-food-row__unit">g</span>
+                            </div>
+                            <div class="diet-food-row__mini"><span class="dfr-k">0</span> kcal · <span class="dfr-p">0</span>P · <span class="dfr-c">0</span>C · <span class="dfr-f">0</span>F</div>
+                        </div>
+                    </div>
+                    <div class="meal-card__tools">
+                        <button type="button" class="meal-card__add-food" data-meal="supp">+ Añadir alimento al bloque</button>
+                    </div>
+                    <footer class="meal-card__footer">
+                        <span class="meal-card__sum-label">Subtotal suplementación</span>
+                        <span class="meal-card__sum" data-meal-sum="supp">0 kcal · 0P / 0C / 0F</span>
+                    </footer>
+                </article>
+
+                <article class="meal-card cyber-card meal-card--notes">
+                    <header class="meal-card__header">
+                        <div class="meal-card__icon">📋</div>
+                        <div class="meal-card__meta">
+                            <h3 class="meal-card__title">Notas del plan</h3>
+                            <span class="meal-card__tag">Visible para el cliente</span>
+                        </div>
+                    </header>
+                    <p class="text-small text-chrome meal-card__notes">Hidratación 35–40 ml/kg en días de pierna. Ajustar ciclodextrina si sesión &lt; 60 min.</p>
+                </article>
             </div>
             
             <div id="creator-train" class="creator-pane is-hidden">
@@ -460,62 +712,200 @@
                     <div class="variant-tab" onclick="createNewVariant()">+ CREAR</div>
                 </div>
 
-                <div class="cyber-card">
-                    <div class="card-header">
-                        <div class="card-icon">💪</div>
-                        <div class="card-title">EMPUJE A (Pecho/Hombro)</div>
-                        <div class="card-action tooltip" data-tooltip="Añadir ejercicio" onclick="addExercise()">+</div>
-                    </div>
-                    <div class="row">
-                        <div>
-                            <div class="text-chrome">Press Inclinado Multipower</div>
-                            <div class="text-small">2 Top Set x 6-8 reps • RIR 2</div>
-                        </div>
-                        <div class="u-flex-video-row">
-                            <span class="u-fs-20 u-cursor-pointer tooltip" data-tooltip="Ver vídeo">🎥</span>
-                            <span class="text-neon editable">100kg</span>
-                        </div>
-                    </div>
-                    <div class="divider"></div>
-                    <div class="row">
-                        <div>
-                            <div class="text-chrome">Press Militar con Barra</div>
-                            <div class="text-small">3 x 8-10 reps • RIR 1-2</div>
-                        </div>
-                        <div class="u-flex-video-row">
-                            <span class="u-fs-20 u-cursor-pointer tooltip" data-tooltip="Ver vídeo">🎥</span>
-                            <span class="text-neon editable">60kg</span>
-                        </div>
-                    </div>
-                    <div class="divider"></div>
-                    <div class="row">
-                        <div>
-                            <div class="text-chrome">Aperturas en Contractora</div>
-                            <div class="text-small">3 x 12-15 reps • RIR 1</div>
-                        </div>
-                        <div class="u-flex-video-row">
-                            <span class="u-fs-20 u-cursor-pointer tooltip" data-tooltip="Ver vídeo">🎥</span>
-                            <span class="text-neon editable">45kg</span>
-                        </div>
-                    </div>
+                <div class="train-program-head cyber-card">
+                    <div class="train-program-head__title">Mesociclo · Fuerza / Hipertrofia</div>
+                    <p class="text-small">Semana 3 de 4 · Progresión lineal controlada · Comparativa vs semana anterior</p>
                 </div>
 
-                <div class="cyber-card">
+                <div class="cyber-card creator-ai-surface" id="creator-train-copilot">
+                    <div class="card-header">
+                        <div class="card-icon">🧠</div>
+                        <div class="card-title">COPILOTO · ENTRENO</div>
+                    </div>
+                    <div id="creator-train-copilot-body" class="creator-ai-surface__body"></div>
+                    <p class="text-small ai-disclaimer u-mt-8">Alertas de fatiga / carga: análisis asistido. Valida siempre antes de cambiar carga o deload.</p>
+                </div>
+
+                <section class="train-day-block">
+                    <header class="train-day-block__header">
+                        <span class="train-day-block__badge">DÍA 1</span>
+                        <div>
+                            <h3 class="train-day-block__title">Empuje · Pecho + Hombro</h3>
+                            <p class="text-small train-day-block__sub">Lunes · TTA en básicos · RIR objetivo respetado</p>
+                        </div>
+                        <button type="button" class="train-day-block__add tooltip" data-tooltip="Añadir ejercicio" onclick="addExercise()">+</button>
+                    </header>
+
+                    <article class="exercise-card" data-exercise="press-incl" data-prev-weight="95" data-fatigue="media" data-intensity="alta">
+                        <div class="exercise-card__top">
+                            <div class="exercise-card__info">
+                                <h4 class="exercise-card__name">Press inclinado multipower</h4>
+                                <p class="text-small exercise-card__cue">Top set + back-off · Escápulas fijas · 2–3 min descanso</p>
+                            </div>
+                            <button type="button" class="exercise-card__video tooltip" data-tooltip="Ver técnica" aria-label="Vídeo">🎥</button>
+                        </div>
+                        <div class="exercise-card__grid">
+                            <label class="ex-field"><span class="ex-field__l">Series</span><input type="number" class="ex-field__in" min="1" value="2" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Reps</span><input type="text" class="ex-field__in" value="6–8" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Peso (kg)</span><input type="number" class="ex-field__in ex-field__in--weight" min="0" step="0.5" value="100" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">RIR</span><input type="text" class="ex-field__in" value="2" data-ex-input></label>
+                        </div>
+                        <div class="ex-meta-chips">
+                            <span class="ex-chip ex-chip--fatigue ex-chip--fatigue-med">Fatiga media</span>
+                            <span class="ex-chip ex-chip--intensity ex-chip--int-high">Intensidad alta</span>
+                        </div>
+                        <div class="exercise-card__progress">
+                            <div class="ex-prog">
+                                <span class="ex-prog__label">Semana anterior</span>
+                                <span class="ex-prog__val">95 kg · misma estructura</span>
+                            </div>
+                            <div class="ex-prog__delta ex-prog__delta--up">
+                                <span class="ex-prog__arrow">▲</span> +5,3 % carga · volumen en rango
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="exercise-card" data-exercise="press-militar" data-prev-weight="57.5" data-fatigue="alta" data-intensity="alta">
+                        <div class="exercise-card__top">
+                            <div class="exercise-card__info">
+                                <h4 class="exercise-card__name">Press militar con barra</h4>
+                                <p class="text-small exercise-card__cue">3 series efectivas · Core en bloque · Sin arco lumbar</p>
+                            </div>
+                            <button type="button" class="exercise-card__video tooltip" data-tooltip="Ver técnica" aria-label="Vídeo">🎥</button>
+                        </div>
+                        <div class="exercise-card__grid">
+                            <label class="ex-field"><span class="ex-field__l">Series</span><input type="number" class="ex-field__in" min="1" value="3" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Reps</span><input type="text" class="ex-field__in" value="8–10" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Peso (kg)</span><input type="number" class="ex-field__in ex-field__in--weight" min="0" step="0.5" value="60" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">RIR</span><input type="text" class="ex-field__in" value="1–2" data-ex-input></label>
+                        </div>
+                        <div class="ex-meta-chips">
+                            <span class="ex-chip ex-chip--fatigue ex-chip--fatigue-high">Fatiga alta</span>
+                            <span class="ex-chip ex-chip--intensity ex-chip--int-high">Intensidad alta</span>
+                        </div>
+                        <div class="exercise-card__progress">
+                            <div class="ex-prog">
+                                <span class="ex-prog__label">Semana anterior</span>
+                                <span class="ex-prog__val">57,5 kg</span>
+                            </div>
+                            <div class="ex-prog__delta ex-prog__delta--up">
+                                <span class="ex-prog__arrow">▲</span> +4,3 % · adherencia al RIR
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="exercise-card" data-exercise="aperturas" data-prev-weight="45" data-fatigue="baja" data-intensity="media">
+                        <div class="exercise-card__top">
+                            <div class="exercise-card__info">
+                                <h4 class="exercise-card__name">Aperturas en máquina</h4>
+                                <p class="text-small exercise-card__cue">Accesorio · Excéntrica 3s · Sin despegamiento de hombros</p>
+                            </div>
+                            <button type="button" class="exercise-card__video tooltip" data-tooltip="Ver técnica" aria-label="Vídeo">🎥</button>
+                        </div>
+                        <div class="exercise-card__grid">
+                            <label class="ex-field"><span class="ex-field__l">Series</span><input type="number" class="ex-field__in" min="1" value="3" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Reps</span><input type="text" class="ex-field__in" value="12–15" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Peso (kg)</span><input type="number" class="ex-field__in ex-field__in--weight" min="0" step="0.5" value="45" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">RIR</span><input type="text" class="ex-field__in" value="1" data-ex-input></label>
+                        </div>
+                        <div class="ex-meta-chips">
+                            <span class="ex-chip ex-chip--fatigue ex-chip--fatigue-low">Fatiga baja</span>
+                            <span class="ex-chip ex-chip--intensity ex-chip--int-med">Intensidad media</span>
+                        </div>
+                        <div class="exercise-card__progress">
+                            <div class="ex-prog">
+                                <span class="ex-prog__label">Semana anterior</span>
+                                <span class="ex-prog__val">45 kg · mismo rango reps</span>
+                            </div>
+                            <div class="ex-prog__delta ex-prog__delta--hold">
+                                <span class="ex-prog__arrow">◆</span> Mantenimiento · priorizar calidad de ROM
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="train-day-block train-day-block--alt">
+                    <header class="train-day-block__header">
+                        <span class="train-day-block__badge train-day-block__badge--alt">DÍA 2</span>
+                        <div>
+                            <h3 class="train-day-block__title">Empuje · Accesorios + Brazos</h3>
+                            <p class="text-small train-day-block__sub">Jueves · Volumen moderado · Menos fatiga neural</p>
+                        </div>
+                    </header>
+
+                    <article class="exercise-card" data-prev-weight="32" data-fatigue="media" data-intensity="media">
+                        <div class="exercise-card__top">
+                            <div class="exercise-card__info">
+                                <h4 class="exercise-card__name">Press banca mancuernas</h4>
+                                <p class="text-small exercise-card__cue">Rango completo · Codos 45°</p>
+                            </div>
+                            <button type="button" class="exercise-card__video tooltip" data-tooltip="Ver técnica" aria-label="Vídeo">🎥</button>
+                        </div>
+                        <div class="exercise-card__grid">
+                            <label class="ex-field"><span class="ex-field__l">Series</span><input type="number" class="ex-field__in" min="1" value="3" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Reps</span><input type="text" class="ex-field__in" value="10–12" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Peso (kg)</span><input type="number" class="ex-field__in ex-field__in--weight" min="0" step="0.5" value="34" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">RIR</span><input type="text" class="ex-field__in" value="2" data-ex-input></label>
+                        </div>
+                        <div class="ex-meta-chips">
+                            <span class="ex-chip ex-chip--fatigue ex-chip--fatigue-med">Fatiga media</span>
+                            <span class="ex-chip ex-chip--intensity ex-chip--int-med">Intensidad media</span>
+                        </div>
+                        <div class="exercise-card__progress">
+                            <div class="ex-prog">
+                                <span class="ex-prog__label">Semana anterior</span>
+                                <span class="ex-prog__val">32 kg / mancuerna</span>
+                            </div>
+                            <div class="ex-prog__delta ex-prog__delta--up">
+                                <span class="ex-prog__arrow">▲</span> +6,2 % · buena técnica en vídeo
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="exercise-card" data-prev-weight="20" data-fatigue="baja" data-intensity="baja">
+                        <div class="exercise-card__top">
+                            <div class="exercise-card__info">
+                                <h4 class="exercise-card__name">Curl martillo cable</h4>
+                                <p class="text-small exercise-card__cue">Sin balanceo · Pausa 1s arriba</p>
+                            </div>
+                            <button type="button" class="exercise-card__video tooltip" data-tooltip="Ver técnica" aria-label="Vídeo">🎥</button>
+                        </div>
+                        <div class="exercise-card__grid">
+                            <label class="ex-field"><span class="ex-field__l">Series</span><input type="number" class="ex-field__in" min="1" value="3" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Reps</span><input type="text" class="ex-field__in" value="12–15" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">Peso (kg)</span><input type="number" class="ex-field__in ex-field__in--weight" min="0" step="0.5" value="22.5" data-ex-input></label>
+                            <label class="ex-field"><span class="ex-field__l">RIR</span><input type="text" class="ex-field__in" value="1–2" data-ex-input></label>
+                        </div>
+                        <div class="ex-meta-chips">
+                            <span class="ex-chip ex-chip--fatigue ex-chip--fatigue-low">Fatiga baja</span>
+                            <span class="ex-chip ex-chip--intensity ex-chip--int-low">Intensidad baja</span>
+                        </div>
+                        <div class="exercise-card__progress">
+                            <div class="ex-prog">
+                                <span class="ex-prog__label">Semana anterior</span>
+                                <span class="ex-prog__val">20 kg</span>
+                            </div>
+                            <div class="ex-prog__delta ex-prog__delta--up">
+                                <span class="ex-prog__arrow">▲</span> +12,5 % · rango reps estable
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <div class="cyber-card train-notes-card">
                     <div class="card-header">
                         <div class="card-icon">📝</div>
-                        <div class="card-title">NOTAS DE EJECUCIÓN</div>
+                        <div class="card-title">NOTAS DE EJECUCIÓN (BLOQUE)</div>
                     </div>
-                    <div class="text-small u-execution-notes">
-                        • Priorizar técnica sobre carga en press inclinado<br>
-                        • Mantener core activo durante press militar<br>
-                        • Controlar la fase excéntrica en aperturas (3 segundos)<br>
-                        • Descanso entre series: 2-3 minutos en básicos, 90s en accesorios
-                    </div>
+                    <ul class="train-notes-list text-small">
+                        <li>Priorizar técnica sobre carga en multipower; vídeo obligatorio en top set si hay duda.</li>
+                        <li>Press militar: si RIR &lt; 1 en serie 2, bajar 2,5 kg y completar rango.</li>
+                        <li>Aperturas: no compensar con inercia; si fallas reps, reduce peso antes que ROM.</li>
+                        <li>Día 2: mantener descansos 60–90 s en accesorios.</li>
+                    </ul>
                 </div>
-                
-                <div class="text-small u-creator-footer-hint">
-                    📹 Enlaces de vídeo incluidos para demostración técnica
-                </div>
+
+                <p class="text-small u-creator-footer-hint">📹 Vínculos técnicos y histórico de cargas en versión SaaS con base de datos.</p>
             </div>
             
             <div class="creator-sticky-bar">
@@ -533,7 +923,10 @@
         <!-- OFICINA SCREEN -->
         <div class="screen" id="screen-oficina">
             <div class="header">
-                <div class="header-title">THE OFFICE 💼</div>
+                <div class="header-title header-title--with-mark">
+                    <img src="public/icons/icon-180.png" alt="" class="titan-brand-icon titan-brand-icon--header" width="44" height="44" decoding="async">
+                    <span class="header-title__text">THE OFFICE 💼</span>
+                </div>
             </div>
             
             <div class="finance-card">
@@ -763,6 +1156,68 @@
         </div>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <!-- Supabase JS v2 (UMD) — fallback si falla el import ESM (expone `supabase.createClient` en window). -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
+
+    <!-- Config pública Supabase (anon key). Si despliegas en Vercel, /api/env puede sobrescribir estos valores. -->
+    <script>
+      window.__ENV__ = window.__ENV__ || {};
+      window.__ENV__.SUPABASE_URL = window.__ENV__.SUPABASE_URL || 'https://yagsuuajlchjqayxpgqf.supabase.co';
+      window.__ENV__.SUPABASE_ANON_KEY = window.__ENV__.SUPABASE_ANON_KEY || 'sb_publishable_If6RU9S9r8U_mZP3HzINHA_VsKvr8tg';
+      // window.__ENV__.DEBUG_AUTH = true; // (opcional) activa logs de auth
+    </script>
+
+    <script type="module">
+      // Carga variables de entorno en runtime (ideal para Vercel).
+      async function loadRuntimeEnv() {
+        try {
+          const res = await fetch('/api/env', { cache: 'no-store' });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data || typeof data !== 'object') return;
+          window.__ENV__ = Object.assign({}, window.__ENV__ || {}, data);
+        } catch {
+          // silencio: en local puede no existir /api/env
+        }
+      }
+
+      async function ensureSupabaseCreateClient() {
+        try {
+          if (window.supabase && typeof window.supabase.createClient === 'function') return;
+          const mod = await import('https://esm.sh/@supabase/supabase-js@2');
+          if (!mod || typeof mod.createClient !== 'function') return;
+          window.supabase = Object.assign({}, window.supabase || {}, {
+            createClient: mod.createClient,
+          });
+        } catch {
+          // fallback: puede quedar el UMD
+        }
+      }
+
+      async function waitForSupabaseCreateClient(timeoutMs = 8000) {
+        const start = performance.now();
+        while (performance.now() - start < timeoutMs) {
+          if (window.supabase && typeof window.supabase.createClient === 'function') return true;
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        return false;
+      }
+
+      await loadRuntimeEnv();
+      await ensureSupabaseCreateClient();
+      const ok = await waitForSupabaseCreateClient();
+      if (!ok) {
+        console.error('[boot] Supabase no está disponible (createClient).');
+      }
+
+      import './app.js';
+    </script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('./sw.js').catch(function () {});
+        });
+      }
+    </script>
 </body>
 </html>

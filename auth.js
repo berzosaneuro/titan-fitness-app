@@ -1,29 +1,29 @@
 /**
- * Capa de autenticación — sin DOM.
- * Sustituir persistencia y validación por Supabase/Auth0 sin tocar la UI.
+ * Autenticación con Supabase Auth (sin DOM).
+ * Requiere `supabaseClient.js` + variables de entorno y que exista `window.supabase.createClient`
+ * (vía UMD o import ESM desde `index.html`).
  */
 
-export const STORAGE_KEY = 'titan-user';
+import { getSupabaseClient } from './supabaseClient.js';
 
-/** Roles preparados para RBAC multi-tenant */
+/** Roles sugeridos en `user_metadata.role` (app / RLS) */
 export const ROLE = {
     COACH: 'coach',
     ADMIN: 'admin',
     VIEWER: 'viewer',
 };
 
-const DEMO_USER = {
-    id: 'usr_demo_1',
-    email: 'coach@titan.app',
-    name: 'Coach Demo',
-    role: ROLE.COACH,
-    tenantId: 'tenant_demo',
-};
+const LEGACY_STORAGE_KEY = 'titan-user';
 
-const DEMO_PASSWORD = 'Titan2025!';
+const DEBUG_AUTH =
+    typeof globalThis !== 'undefined' &&
+    globalThis.__ENV__ &&
+    typeof globalThis.__ENV__ === 'object' &&
+    globalThis.__ENV__.DEBUG_AUTH === true;
 
-function delay(ms) {
-    return new Promise((r) => setTimeout(r, ms));
+function debugAuth(...args) {
+    if (!DEBUG_AUTH) return;
+    console.log(...args);
 }
 
 function normalizeEmail(email) {
@@ -32,81 +32,225 @@ function normalizeEmail(email) {
         .toLowerCase();
 }
 
-function readStoredUser() {
+/**
+ * Perfil de aplicación alineado con workspace multi-tenant (`user_metadata` en Supabase).
+ * @param {import('@supabase/supabase-js').User | null} user
+ */
+export function mapSupabaseUserToProfile(user) {
+    if (!user) return null;
+    const meta = user.user_metadata && typeof user.user_metadata === 'object' ? user.user_metadata : {};
+    return {
+        id: user.id,
+        email: normalizeEmail(user.email),
+        name: meta.full_name != null ? String(meta.full_name) : meta.name != null ? String(meta.name) : '',
+        role: meta.role != null ? String(meta.role) : ROLE.COACH,
+        tenantId: meta.tenant_id != null ? String(meta.tenant_id) : '',
+        organizationName: meta.organization_name != null ? String(meta.organization_name) : '',
+        planTier: meta.plan_tier != null ? String(meta.plan_tier) : 'standard',
+    };
+}
+
+/** @type {ReturnType<typeof mapSupabaseUserToProfile> | null} */
+let cachedUser = null;
+
+let authSubscriptionStarted = false;
+
+const externalAuthListeners = new Set();
+
+function clearLegacyLocalProfile() {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object' || !parsed.id) return null;
-        return parsed;
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
-        return null;
+        /* ignore */
     }
 }
 
-function writeUser(user) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+function ensureAuthSubscription() {
+    if (authSubscriptionStarted) return;
+    const client = getSupabaseClient();
+    authSubscriptionStarted = true;
+    client.auth.onAuthStateChange((event, session) => {
+        cachedUser = session?.user ? mapSupabaseUserToProfile(session.user) : null;
+        externalAuthListeners.forEach((cb) => {
+            try {
+                cb(event, session);
+            } catch (err) {
+                console.error('[auth] onAuthStateChange listener', err);
+            }
+        });
+    });
 }
 
 /**
- * @returns {object|null} usuario actual o null
+ * Restaura la sesión desde el almacenamiento de Supabase y registra el listener global.
+ * Llama una vez al arranque de la app (p. ej. desde `initApp`).
+ */
+export async function hydrateAuth() {
+    clearLegacyLocalProfile();
+    try {
+        const client = getSupabaseClient();
+        ensureAuthSubscription();
+        const {
+            data: { session },
+            error,
+        } = await client.auth.getSession();
+        if (error) {
+            console.error('[auth] getSession', error.message);
+            cachedUser = null;
+            return;
+        }
+        cachedUser = session?.user ? mapSupabaseUserToProfile(session.user) : null;
+    } catch (err) {
+        console.error('[auth] hydrateAuth', err);
+        cachedUser = null;
+    }
+}
+
+/**
+ * @returns {object | null} Perfil cacheado (sincronizado con la sesión de Supabase).
  */
 export function getCurrentUser() {
-    return readStoredUser();
+    return cachedUser;
 }
 
 export function isAuthenticated() {
-    return readStoredUser() != null;
-}
-
-export function logout() {
-    localStorage.removeItem(STORAGE_KEY);
+    return cachedUser != null;
 }
 
 /**
- * Login simulado (reemplazar por fetch a /api/auth/login).
+ * Sesión actual del SDK.
+ * @returns {Promise<{ session: import('@supabase/supabase-js').Session | null, error: Error | null }>}
+ */
+export async function getSession() {
+    const client = getSupabaseClient();
+    const { data, error } = await client.auth.getSession();
+    return {
+        session: data.session,
+        error: error ?? null,
+    };
+}
+
+/**
+ * Escucha cambios de sesión (login, logout, refresh, etc.).
+ * @param {(event: string, session: import('@supabase/supabase-js').Session | null) => void} callback
+ * @returns {() => void} función para dejar de escuchar este callback
+ */
+export function onAuthStateChange(callback) {
+    if (typeof callback !== 'function') {
+        return () => {};
+    }
+    getSupabaseClient();
+    ensureAuthSubscription();
+    externalAuthListeners.add(callback);
+    return () => {
+        externalAuthListeners.delete(callback);
+    };
+}
+
+/**
  * @returns {Promise<{ ok: true, user: object } | { ok: false, error: string }>}
  */
 export async function login(email, password) {
-    await delay(450);
     const e = normalizeEmail(email);
     if (!e || !password) {
         return { ok: false, error: 'Introduce email y contraseña.' };
     }
-    if (e === DEMO_USER.email && password === DEMO_PASSWORD) {
-        const user = { ...DEMO_USER, email: e };
-        writeUser(user);
+    try {
+        const client = getSupabaseClient();
+        ensureAuthSubscription();
+        debugAuth('[auth] login:start', { email: e });
+        const { data, error } = await client.auth.signInWithPassword({
+            email: e,
+            password,
+        });
+        if (error) {
+            debugAuth('[auth] login:error', error);
+            return { ok: false, error: translateAuthError(error) };
+        }
+        if (!data.user) {
+            debugAuth('[auth] login:missing-user', { email: e, data });
+            return { ok: false, error: 'No se recibió el usuario tras iniciar sesión.' };
+        }
+        const user = mapSupabaseUserToProfile(data.user);
+        cachedUser = user;
         return { ok: true, user };
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return { ok: false, error: msg || 'Error al iniciar sesión.' };
     }
-    return { ok: false, error: 'Credenciales incorrectas. Prueba modo demo o coach@titan.app' };
 }
 
 /**
- * Sesión demo sin contraseña (onboarding / trials).
+ * @returns {Promise<{ ok: true, user: object | null, needsEmailConfirmation: boolean } | { ok: false, error: string }>}
  */
-export async function loginAsDemo() {
-    await delay(320);
-    const user = {
-        ...DEMO_USER,
-        id: 'usr_demo_guest',
-        email: 'demo@titan.app',
-        name: 'Invitado demo',
-        role: ROLE.COACH,
-        tenantId: 'tenant_demo',
-        isDemoSession: true,
+export async function register(email, password) {
+    const e = normalizeEmail(email);
+    if (!e || !password) {
+        return { ok: false, error: 'Introduce email y contraseña.' };
+    }
+    if (password.length < 6) {
+        return { ok: false, error: 'La contraseña debe tener al menos 6 caracteres.' };
+    }
+    try {
+        const client = getSupabaseClient();
+        ensureAuthSubscription();
+        debugAuth('[auth] signup:start', { email: e });
+        const { data, error } = await client.auth.signUp({
+            email: e,
+            password,
+        });
+        if (error) {
+            debugAuth('[auth] signup:error', error);
+            return { ok: false, error: translateAuthError(error) };
+        }
+        const needsEmailConfirmation = !data.session;
+        const user = data.user ? mapSupabaseUserToProfile(data.user) : null;
+        if (data.session && user) {
+            cachedUser = user;
+        }
+        return { ok: true, user, needsEmailConfirmation };
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return { ok: false, error: msg || 'Error al registrar la cuenta.' };
+    }
+}
+
+// Alias para el contrato esperado (signup).
+export const signup = register;
+
+export async function logout() {
+    try {
+        const client = getSupabaseClient();
+        await client.auth.signOut();
+    } catch (err) {
+        console.error('[auth] signOut', err);
+    } finally {
+        cachedUser = null;
+    }
+}
+
+/** @param {import('@supabase/supabase-js').AuthError} error */
+function translateAuthError(error) {
+    if (!error?.message) return 'Error de autenticación.';
+    const map = {
+        'Invalid login credentials': 'Credenciales incorrectas.',
+        'Email not confirmed': 'Confirma tu email antes de entrar.',
     };
-    writeUser(user);
-    return { ok: true, user };
+    return map[error.message] || error.message;
 }
 
 /**
- * Contrato listo para inyectar proveedor real (Supabase, Clerk, etc.).
+ * Contrato para extensiones (telemetría, tests).
  */
 export const authAdapter = {
-    STORAGE_KEY,
+    ROLE,
+    hydrateAuth,
     getCurrentUser,
     isAuthenticated,
+    getSession,
     login,
-    loginAsDemo,
+    signup,
+    register,
     logout,
+    onAuthStateChange,
 };

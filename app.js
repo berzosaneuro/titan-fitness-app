@@ -12,11 +12,29 @@ import {
 } from './ai.js';
 import {
     getCurrentUser,
+    getSession,
+    hydrateAuth,
     isAuthenticated,
     login,
-    loginAsDemo,
     logout as authLogout,
+    onAuthStateChange,
+    register,
 } from './auth.js';
+import { EXERCISES } from './data/catalogs.js';
+import { listAthleteNames } from './data/workspace-store.js';
+import { openTitanPicker } from './components/dropdown.js';
+import { refreshEnterpriseHome } from './app/enterprise-dashboard.js';
+import {
+    initCreatorNutrition,
+    recalcCreatorDiet,
+    refreshTrainingCopilotPanel,
+    syncCreatorPlanFromWorkspace,
+} from './app/creator-diet.js';
+import { setPlanAthlete } from './app/session.js';
+import { initTrainingTelemetryUi, refreshTrainingTelemetryPanel } from './app/training-telemetry-ui.js';
+import { flushQueue, initTelemetryQueue } from './telemetryQueue.js';
+import { isSupabaseConfigured } from './supabaseClient.js';
+import { ensureUserProfile, finalizeActiveSessionOnLogout } from './trainingSession.js';
 
 // ——— Rutas (preparado Next.js App Router) ———
 const SCREEN_IDS = {
@@ -117,6 +135,11 @@ function setActiveNav(screenId, clickedNavEl) {
 }
 
 function navigateToScreen(screenId, opts = {}) {
+    if (!isAuthenticated()) {
+        stopTitanShell();
+        showAuthShell();
+        return;
+    }
     const { navElement, syncHistory = true, replace = false } = opts;
     if (syncHistory) pushScreenPath(screenId, { replace });
     applyScreenVisibility(screenId);
@@ -124,9 +147,16 @@ function navigateToScreen(screenId, opts = {}) {
     scrollToTop();
     if (screenId === SCREEN_IDS.INICIO) {
         refreshDailyAISummary();
+        refreshEnterpriseHome();
     }
     if (screenId === SCREEN_IDS.ATHLETE_DETAIL) {
         scheduleAthleteCopilotRefresh();
+        void refreshTrainingTelemetryPanel();
+    }
+    if (screenId === SCREEN_IDS.CREADOR) {
+        syncCreatorPlanFromWorkspace();
+        recalcCreatorDiet();
+        refreshTrainingCopilotPanel();
     }
 }
 
@@ -153,8 +183,15 @@ function showModal(title, body, confirmText, onConfirm) {
     const confirmBtn = document.getElementById('modal-confirm');
     confirmBtn.querySelector('.button-text').textContent = confirmLabel;
     if (typeof onConfirm === 'function') {
-        confirmBtn.onclick = () => {
-            onConfirm();
+        confirmBtn.onclick = async () => {
+            try {
+                const ret = await Promise.resolve(onConfirm());
+                if (ret === false) {
+                    return;
+                }
+            } catch (err) {
+                console.warn('[modal] onConfirm', err);
+            }
             closeModal();
         };
     } else {
@@ -437,9 +474,11 @@ function switchCreatorTab(tab, tabEl) {
     if (tab === 'diet') {
         diet.classList.remove('is-hidden');
         train.classList.add('is-hidden');
+        recalcCreatorDiet();
     } else {
         diet.classList.add('is-hidden');
         train.classList.remove('is-hidden');
+        refreshTrainingCopilotPanel();
     }
 }
 
@@ -463,6 +502,7 @@ function filterAthletes(query) {
 
 function viewAthlete(name) {
     currentAthleteName = name;
+    setPlanAthlete(name);
     athleteCopilotLoadedFor = null;
     document.getElementById('athlete-detail-name').textContent = name;
     navigateToScreen(SCREEN_IDS.ATHLETE_DETAIL, { syncHistory: true });
@@ -577,14 +617,31 @@ function createReport() {
         'Crear Nuevo Reporte',
         modalInputGroup(
             'TÍTULO DEL REPORTE',
-            '<input type="text" class="cyber-input" placeholder="Ej: Revisión Semanal">'
+            '<input type="text" class="cyber-input" id="report-title-field" placeholder="Ej: Revisión Semanal">'
         ) +
             modalInputGroup(
                 'NOTAS',
-                '<textarea class="cyber-input" rows="4" placeholder="Observaciones del progreso..."></textarea>'
+                '<textarea class="cyber-input" rows="4" id="report-notes-field" placeholder="Observaciones del progreso..."></textarea>'
             ),
         'CREAR REPORTE',
-        () => showToast('✅ Reporte creado correctamente')
+        async () => {
+            const title = document.getElementById('report-title-field');
+            const notes = document.getElementById('report-notes-field');
+            const t = (title && title.value) || '';
+            const n = (notes && notes.value) || '';
+            const combined = [t.trim(), n.trim()].filter(Boolean).join('\n\n');
+            if (!combined) {
+                showToast('Escribe título o notas para guardar.');
+                return false;
+            }
+            const { insertNote } = await import('./trainingSession.js');
+            const r = await insertNote(combined, null);
+            if (!r.ok) {
+                showToast('No se guardó: ' + (r.error || 'error'));
+                return false;
+            }
+            showToast('✅ Nota / reporte guardado en Supabase');
+        }
     );
 }
 
@@ -639,23 +696,20 @@ function addSupplement() {
 }
 
 function addExercise() {
-    showModal(
-        'Añadir Ejercicio',
-        modalInputGroup(
-            'EJERCICIO',
-            '<input type="text" class="cyber-input" placeholder="Ej: Press Banca">'
-        ) +
-            modalInputGroup(
-                'SERIES x REPS',
-                '<input type="text" class="cyber-input" placeholder="Ej: 3 x 8-10">'
-            ) +
-            modalInputGroup(
-                'CARGA (kg)',
-                '<input type="number" class="cyber-input" placeholder="80">'
-            ),
-        'AÑADIR EJERCICIO',
-        () => showToast('✅ Ejercicio añadido al plan')
-    );
+    openTitanPicker({
+        title: 'Añadir ejercicio al día',
+        placeholder: 'Buscar ejercicio o músculo…',
+        items: EXERCISES.map((e) => ({
+            id: e.id,
+            title: e.name,
+            subtitle: e.muscle,
+            meta: e.pattern,
+        })),
+        searchIn: ['title', 'subtitle', 'meta'],
+        onSelect: (it) => {
+            showToast('✅ "' + it.title + '" preparado · confirma series en editor');
+        },
+    });
 }
 
 function createNewVariant() {
@@ -679,23 +733,23 @@ function saveDraft() {
 }
 
 function sendToClient() {
-    showModal(
-        'Enviar Plan al Cliente',
-        modalInputGroup(
-            'SELECCIONAR CLIENTE',
-            '<select class="cyber-input">' +
-                '<option>Laura Pro</option>' +
-                '<option>Javi M.</option>' +
-                '<option>María S.</option>' +
-                '<option>Raúl C.</option></select>'
-        ) +
-            modalInputGroup(
-                'MENSAJE OPCIONAL',
-                '<textarea class="cyber-input" rows="3" placeholder="Añade un mensaje personalizado..."></textarea>'
-            ),
-        'ENVIAR AHORA',
-        () => showToast('📤 Plan enviado correctamente')
-    );
+    const names = listAthleteNames(getCurrentUser());
+    openTitanPicker({
+        title: 'Destinatario del plan',
+        placeholder: 'Buscar cliente…',
+        items: names.map((n) => ({ id: n, title: n, subtitle: 'Dieta + entreno · envío simulado' })),
+        onSelect: (it) => {
+            showModal(
+                'Enviar plan a ' + it.title,
+                modalInputGroup(
+                    'MENSAJE OPCIONAL',
+                    '<textarea class="cyber-input" rows="3" placeholder="Mensaje personalizado para el cliente"></textarea>'
+                ),
+                'ENVIAR AHORA',
+                () => showToast('📤 Plan registrado para ' + it.title + ' (pendiente de envío al cliente)')
+            );
+        },
+    });
 }
 
 function editFinance(_type) {
@@ -768,8 +822,8 @@ function applyAISuggestion() {
     showToast('🤖 Sugerencia de IA aplicada al protocolo');
 }
 
-/** Sugerencias de plan (demo: modal con IA + mock fallback) */
-async function showPlanAdjustmentsDemo() {
+/** Sugerencias de plan (copiloto; propuestas no aplicadas automáticamente) */
+async function showPlanAdjustments() {
     showModal(
         'Sugerencias de plan',
         '<div class="ai-loading text-neon">Analizando contexto…</div>',
@@ -849,13 +903,17 @@ const api = {
     toggleAthleteCopilot,
     generateAthleteClientMessage,
     refreshDailyAISummary,
-    showPlanAdjustmentsDemo,
+    showPlanAdjustments,
     logoutApp,
+    recalcCreatorDiet,
+    syncCreatorPlanFromWorkspace,
+    refreshEnterpriseHome,
+    refreshTrainingCopilotPanel,
 };
 
 Object.assign(window, api);
 window.TitanApp = {
-    version: '5.0.0-saas-auth',
+    version: '6.0.0-enterprise-shell',
     routes: { SCREEN_IDS },
     tenant: TENANT_CONFIG,
     getAILogSnapshot,
@@ -871,6 +929,14 @@ const elApp = () => document.getElementById('app-screen');
 
 let detachPopstate = null;
 let titanShellStarted = false;
+let detachTelemetryQueue = null;
+
+function ensureTelemetryQueueStarted() {
+    if (detachTelemetryQueue) {
+        return;
+    }
+    detachTelemetryQueue = initTelemetryQueue();
+}
 
 function setAuthLayerVisible(visible) {
     const a = elAuth();
@@ -893,23 +959,29 @@ function updateUserBar(user) {
     const out = document.getElementById('app-user-display');
     if (!out || !user) return;
     const role = user.role ? ' · ' + user.role : '';
-    const demo = user.isDemoSession ? ' (demo)' : '';
-    out.textContent = (user.name || user.email) + demo + role;
+    out.textContent = (user.name || user.email) + role;
 }
 
 function setAuthFormLoading(loading) {
     const form = document.getElementById('auth-login-form');
     const btn = document.getElementById('auth-submit');
+    const regBtn = document.getElementById('auth-register-btn');
     const label = document.getElementById('auth-submit-label');
-    const demo = document.getElementById('auth-demo-btn');
+    const regLabel = document.getElementById('auth-register-label');
     if (form) form.classList.toggle('auth-card--loading', loading);
     if (btn) btn.disabled = loading;
-    if (demo) demo.disabled = loading;
-    if (label) label.textContent = loading ? 'ACCEDIENDO…' : 'ACCEDER';
+    if (regBtn) regBtn.disabled = loading;
+    if (label) label.textContent = loading ? 'Iniciando sesión…' : 'Iniciar sesión';
+    if (regLabel) regLabel.textContent = loading ? 'Procesando…' : 'Crear cuenta';
 }
 
 function setAuthError(message) {
     const box = document.getElementById('auth-error');
+    const info = document.getElementById('auth-info');
+    if (info) {
+        info.textContent = '';
+        info.classList.add('is-hidden');
+    }
     if (!box) return;
     if (message) {
         box.textContent = message;
@@ -917,6 +989,23 @@ function setAuthError(message) {
     } else {
         box.textContent = '';
         box.classList.add('is-hidden');
+    }
+}
+
+function setAuthInfo(message) {
+    const box = document.getElementById('auth-error');
+    const info = document.getElementById('auth-info');
+    if (box) {
+        box.textContent = '';
+        box.classList.add('is-hidden');
+    }
+    if (!info) return;
+    if (message) {
+        info.textContent = message;
+        info.classList.remove('is-hidden');
+    } else {
+        info.textContent = '';
+        info.classList.add('is-hidden');
     }
 }
 
@@ -953,9 +1042,14 @@ function canonicalizeRootUrl() {
 }
 
 function showAppShell(user) {
+    ensureTelemetryQueueStarted();
     setAuthLayerVisible(false);
     updateUserBar(user);
     startTitanShell();
+    initCreatorNutrition();
+    void ensureUserProfile();
+    void refreshTrainingTelemetryPanel();
+    void refreshEnterpriseHome();
 }
 
 function showAuthShell() {
@@ -971,33 +1065,80 @@ function showAuthShell() {
     setAuthLayerVisible(true);
     setAuthFormLoading(false);
     setAuthError('');
+    setAuthInfo('');
 }
 
 function bindAuthUi() {
     const form = document.getElementById('auth-login-form');
-    const demo = document.getElementById('auth-demo-btn');
     const logoutBtn = document.getElementById('auth-logout-btn');
+    const registerBtn = document.getElementById('auth-register-btn');
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             setAuthError('');
-            setAuthFormLoading(true);
+            setAuthInfo('');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            if (!isSupabaseConfigured()) {
+                setAuthError(
+                    'Configura SUPABASE_URL y SUPABASE_ANON_KEY en index.html (window.__ENV__) para poder iniciar sesión.'
+                );
+                return;
+            }
             const email = document.getElementById('auth-email')?.value || '';
             const password = document.getElementById('auth-password')?.value || '';
-            const result = await login(email, password);
-            setAuthFormLoading(false);
-            if (result.ok) showAppShell(result.user);
-            else setAuthError(result.error || 'No se pudo iniciar sesión.');
+            setAuthFormLoading(true);
+            try {
+                const result = await login(email, password);
+                if (result.ok) showAppShell(result.user);
+                else setAuthError(result.error || 'No se pudo iniciar sesión.');
+            } catch (err) {
+                setAuthError(err?.message || 'Error inesperado al iniciar sesión.');
+            } finally {
+                setAuthFormLoading(false);
+            }
         });
     }
-    if (demo) {
-        demo.addEventListener('click', async () => {
+    if (registerBtn) {
+        registerBtn.addEventListener('click', async () => {
             setAuthError('');
+            setAuthInfo('');
+            const authForm = registerBtn.closest('form') || form;
+            if (authForm && !authForm.checkValidity()) {
+                authForm.reportValidity();
+                return;
+            }
+            if (!isSupabaseConfigured()) {
+                setAuthError(
+                    'Configura SUPABASE_URL y SUPABASE_ANON_KEY en index.html (window.__ENV__) para poder crear cuenta.'
+                );
+                return;
+            }
+            const email = document.getElementById('auth-email')?.value || '';
+            const password = document.getElementById('auth-password')?.value || '';
             setAuthFormLoading(true);
-            const result = await loginAsDemo();
-            setAuthFormLoading(false);
-            if (result.ok) showAppShell(result.user);
-            else setAuthError('No se pudo entrar en modo demo.');
+            try {
+                const result = await register(email, password);
+                if (result.ok) {
+                    if (result.needsEmailConfirmation) {
+                        setAuthInfo(
+                            'Cuenta creada. Revisa tu correo para confirmar el email; después podrás iniciar sesión.'
+                        );
+                    } else if (result.user) {
+                        showAppShell(result.user);
+                    } else {
+                        setAuthInfo('Cuenta registrada. Inicia sesión con tu correo y contraseña.');
+                    }
+                } else {
+                    setAuthError(result.error || 'No se pudo crear la cuenta.');
+                }
+            } catch (err) {
+                setAuthError(err?.message || 'Error inesperado al registrar.');
+            } finally {
+                setAuthFormLoading(false);
+            }
         });
     }
     if (logoutBtn) {
@@ -1005,13 +1146,63 @@ function bindAuthUi() {
     }
 }
 
-function logoutApp() {
-    authLogout();
+async function logoutApp() {
+    try {
+        await flushQueue();
+    } catch (err) {
+        console.warn('[app] flushQueue en logout', err);
+    }
+    try {
+        await finalizeActiveSessionOnLogout();
+    } catch (err) {
+        console.warn('[app] finalizeActiveSessionOnLogout', err);
+    }
+    await authLogout();
     showAuthShell();
 }
 
-function initApp() {
+/**
+ * Mantiene shell auth/app alineado con Supabase (login en otro flujo, logout, refresh de token, etc.).
+ */
+function syncShellToAuthSession(_event, session) {
+    const user = getCurrentUser();
+    if (session?.user && user) {
+        showAppShell(user);
+    } else {
+        showAuthShell();
+    }
+}
+
+async function initApp() {
+    ensureTelemetryQueueStarted();
+    initTrainingTelemetryUi();
     bindAuthUi();
+    if (!isSupabaseConfigured()) {
+        setAuthError(
+            'Falta configurar Supabase: en index.html descomenta el bloque que asigna window.__ENV__ con SUPABASE_URL y SUPABASE_ANON_KEY (Project Settings → API en tu panel de Supabase). Sin eso no hay login ni registro.'
+        );
+    }
+    await hydrateAuth();
+
+    // Validación explícita de sesión (útil para diagnosticar entornos reales).
+    try {
+        const { session, error } = await getSession();
+        if (error) {
+            console.warn('[app] getSession', error);
+        }
+        if (session?.user) {
+            // noop: hydrateAuth/onAuthStateChange mantienen el cache.
+        }
+    } catch (err) {
+        console.warn('[app] getSession (throw)', err);
+    }
+
+    try {
+        onAuthStateChange(syncShellToAuthSession);
+    } catch (err) {
+        console.warn('[app] No se pudo registrar onAuthStateChange (¿Supabase configurado?).', err);
+    }
+
     if (isAuthenticated()) {
         showAppShell(getCurrentUser());
     } else {
