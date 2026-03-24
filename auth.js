@@ -1,112 +1,85 @@
 /**
- * Capa de autenticación — sin DOM.
- * Sustituir persistencia y validación por Supabase/Auth0 sin tocar la UI.
+ * Capa de autenticación — Supabase.
+ * Sin DOM. Toda la lógica de UI vive en app.js.
  */
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-export const STORAGE_KEY = 'titan-user';
+const SUPABASE_URL = 'https://ilzkwweahzmcmgipylbi.supabase.co';
+// Obtén esta clave en: Supabase Dashboard → Settings → API → anon public
+const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY';
 
-/** Roles preparados para RBAC multi-tenant */
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 export const ROLE = {
     COACH: 'coach',
     ADMIN: 'admin',
     VIEWER: 'viewer',
 };
 
-const DEMO_USER = {
-    id: 'usr_demo_1',
-    email: 'coach@titan.app',
-    name: 'Coach Demo',
-    role: ROLE.COACH,
-    tenantId: 'tenant_demo',
-};
-
-const DEMO_PASSWORD = 'Titan2025!';
-
-function delay(ms) {
-    return new Promise((r) => setTimeout(r, ms));
-}
-
-function normalizeEmail(email) {
-    return String(email || '')
-        .trim()
-        .toLowerCase();
-}
-
-function readStoredUser() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object' || !parsed.id) return null;
-        return parsed;
-    } catch {
-        return null;
-    }
-}
-
-function writeUser(user) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+function translateError(error) {
+    const msg = (error?.message || '').toLowerCase();
+    if (msg.includes('invalid login credentials')) return 'Email o contraseña incorrectos.';
+    if (msg.includes('email not confirmed')) return 'Confirma tu email antes de acceder.';
+    if (msg.includes('user already registered')) return 'Este email ya está registrado.';
+    if (msg.includes('invalid email') || msg.includes('unable to validate email')) return 'El formato del email no es válido.';
+    if (msg.includes('password should be at least')) return 'La contraseña debe tener al menos 6 caracteres.';
+    if (msg.includes('email address not authorized')) return 'Email no autorizado en este sistema.';
+    if (msg.includes('signup is disabled')) return 'El registro está desactivado temporalmente.';
+    if (msg.includes('too many requests')) return 'Demasiados intentos. Espera unos minutos.';
+    return error?.message || 'Error de autenticación.';
 }
 
 /**
- * @returns {object|null} usuario actual o null
+ * Registra un nuevo usuario.
+ * @returns {{ ok: true, user, requiresConfirmation?: true } | { ok: false, error: string }}
  */
-export function getCurrentUser() {
-    return readStoredUser();
-}
-
-export function isAuthenticated() {
-    return readStoredUser() != null;
-}
-
-export function logout() {
-    localStorage.removeItem(STORAGE_KEY);
+export async function signup(email, password) {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) return { ok: false, error: translateError(error) };
+    // Si confirmación de email está activa, session es null hasta confirmar
+    if (!data.session) {
+        return { ok: true, requiresConfirmation: true, user: data.user };
+    }
+    return { ok: true, user: data.user };
 }
 
 /**
- * Login simulado (reemplazar por fetch a /api/auth/login).
- * @returns {Promise<{ ok: true, user: object } | { ok: false, error: string }>}
+ * Inicia sesión con email y contraseña.
+ * @returns {{ ok: true, user } | { ok: false, error: string }}
  */
 export async function login(email, password) {
-    await delay(450);
-    const e = normalizeEmail(email);
-    if (!e || !password) {
-        return { ok: false, error: 'Introduce email y contraseña.' };
-    }
-    if (e === DEMO_USER.email && password === DEMO_PASSWORD) {
-        const user = { ...DEMO_USER, email: e };
-        writeUser(user);
-        return { ok: true, user };
-    }
-    return { ok: false, error: 'Credenciales incorrectas. Prueba modo demo o coach@titan.app' };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { ok: false, error: translateError(error) };
+    return { ok: true, user: data.user };
 }
 
 /**
- * Sesión demo sin contraseña (onboarding / trials).
+ * Cierra sesión del usuario actual.
  */
-export async function loginAsDemo() {
-    await delay(320);
-    const user = {
-        ...DEMO_USER,
-        id: 'usr_demo_guest',
-        email: 'demo@titan.app',
-        name: 'Invitado demo',
-        role: ROLE.COACH,
-        tenantId: 'tenant_demo',
-        isDemoSession: true,
-    };
-    writeUser(user);
-    return { ok: true, user };
+export async function logout() {
+    await supabase.auth.signOut();
 }
 
 /**
- * Contrato listo para inyectar proveedor real (Supabase, Clerk, etc.).
+ * Devuelve la sesión activa o null.
  */
-export const authAdapter = {
-    STORAGE_KEY,
-    getCurrentUser,
-    isAuthenticated,
-    login,
-    loginAsDemo,
-    logout,
-};
+export async function getSession() {
+    const { data } = await supabase.auth.getSession();
+    return data.session ?? null;
+}
+
+/**
+ * Devuelve el usuario autenticado actual o null.
+ */
+export async function getCurrentUser() {
+    const session = await getSession();
+    return session?.user ?? null;
+}
+
+/**
+ * True si hay sesión activa.
+ */
+export async function isAuthenticated() {
+    const session = await getSession();
+    return session !== null;
+}

@@ -12,10 +12,10 @@ import {
 } from './ai.js';
 import {
     getCurrentUser,
-    isAuthenticated,
+    getSession,
     login,
-    loginAsDemo,
     logout as authLogout,
+    signup,
 } from './auth.js';
 
 // ——— Rutas (preparado Next.js App Router) ———
@@ -892,20 +892,16 @@ function setAuthLayerVisible(visible) {
 function updateUserBar(user) {
     const out = document.getElementById('app-user-display');
     if (!out || !user) return;
-    const role = user.role ? ' · ' + user.role : '';
-    const demo = user.isDemoSession ? ' (demo)' : '';
-    out.textContent = (user.name || user.email) + demo + role;
+    out.textContent = user.email || user.id || '—';
 }
 
 function setAuthFormLoading(loading) {
     const form = document.getElementById('auth-login-form');
     const btn = document.getElementById('auth-submit');
-    const label = document.getElementById('auth-submit-label');
-    const demo = document.getElementById('auth-demo-btn');
+    const toggleBtn = document.getElementById('auth-toggle-btn');
     if (form) form.classList.toggle('auth-card--loading', loading);
     if (btn) btn.disabled = loading;
-    if (demo) demo.disabled = loading;
-    if (label) label.textContent = loading ? 'ACCEDIENDO…' : 'ACCEDER';
+    if (toggleBtn) toggleBtn.disabled = loading;
 }
 
 function setAuthError(message) {
@@ -971,49 +967,107 @@ function showAuthShell() {
     setAuthLayerVisible(true);
     setAuthFormLoading(false);
     setAuthError('');
+    setAuthSuccess('');
+    setAuthMode('login');
+}
+
+// ——— Modo del formulario: 'login' | 'register' ———
+let authMode = 'login';
+
+function setAuthMode(mode) {
+    authMode = mode;
+    const title = document.getElementById('auth-mode-title');
+    const submitLabel = document.getElementById('auth-submit-label');
+    const toggleLabel = document.getElementById('auth-toggle-label');
+    const pwInput = document.getElementById('auth-password');
+    setAuthError('');
+    setAuthSuccess('');
+    if (mode === 'register') {
+        if (title) title.textContent = 'CREAR CUENTA';
+        if (submitLabel) submitLabel.textContent = 'REGISTRARSE';
+        if (toggleLabel) toggleLabel.textContent = 'YA TENGO CUENTA';
+        if (pwInput) pwInput.setAttribute('autocomplete', 'new-password');
+    } else {
+        if (title) title.textContent = 'ACCESO COACH';
+        if (submitLabel) submitLabel.textContent = 'ACCEDER';
+        if (toggleLabel) toggleLabel.textContent = 'CREAR CUENTA';
+        if (pwInput) pwInput.setAttribute('autocomplete', 'current-password');
+    }
+}
+
+function setAuthSuccess(message) {
+    const box = document.getElementById('auth-success');
+    if (!box) return;
+    if (message) {
+        box.textContent = message;
+        box.classList.remove('is-hidden');
+    } else {
+        box.textContent = '';
+        box.classList.add('is-hidden');
+    }
 }
 
 function bindAuthUi() {
     const form = document.getElementById('auth-login-form');
-    const demo = document.getElementById('auth-demo-btn');
+    const toggleBtn = document.getElementById('auth-toggle-btn');
     const logoutBtn = document.getElementById('auth-logout-btn');
+
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             setAuthError('');
-            setAuthFormLoading(true);
-            const email = document.getElementById('auth-email')?.value || '';
+            setAuthSuccess('');
+            const email = document.getElementById('auth-email')?.value?.trim() || '';
             const password = document.getElementById('auth-password')?.value || '';
-            const result = await login(email, password);
-            setAuthFormLoading(false);
-            if (result.ok) showAppShell(result.user);
-            else setAuthError(result.error || 'No se pudo iniciar sesión.');
-        });
-    }
-    if (demo) {
-        demo.addEventListener('click', async () => {
-            setAuthError('');
+
+            if (!email || !password) {
+                setAuthError('Introduce tu email y contraseña.');
+                return;
+            }
+
             setAuthFormLoading(true);
-            const result = await loginAsDemo();
-            setAuthFormLoading(false);
-            if (result.ok) showAppShell(result.user);
-            else setAuthError('No se pudo entrar en modo demo.');
+
+            if (authMode === 'register') {
+                const result = await signup(email, password);
+                setAuthFormLoading(false);
+                if (!result.ok) {
+                    setAuthError(result.error || 'No se pudo crear la cuenta.');
+                } else if (result.requiresConfirmation) {
+                    setAuthSuccess('Cuenta creada. Revisa tu email para confirmar y luego accede.');
+                    setAuthMode('login');
+                } else {
+                    showAppShell(result.user);
+                }
+            } else {
+                const result = await login(email, password);
+                setAuthFormLoading(false);
+                if (result.ok) showAppShell(result.user);
+                else setAuthError(result.error || 'No se pudo iniciar sesión.');
+            }
         });
     }
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            setAuthMode(authMode === 'login' ? 'register' : 'login');
+        });
+    }
+
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => logoutApp());
     }
 }
 
-function logoutApp() {
-    authLogout();
+async function logoutApp() {
+    await authLogout();
     showAuthShell();
 }
 
-function initApp() {
+async function initApp() {
     bindAuthUi();
-    if (isAuthenticated()) {
-        showAppShell(getCurrentUser());
+    const session = await getSession();
+    if (session) {
+        showAppShell(session.user);
     } else {
         showAuthShell();
     }

@@ -1612,6 +1612,17 @@ body {
     line-height: 1.45;
 }
 
+.auth-success {
+    background: rgba(0, 240, 255, 0.08);
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 12px;
+    line-height: 1.45;
+}
+
 .auth-submit-btn {
     margin-top: 8px;
     width: 100%;

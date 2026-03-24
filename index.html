@@ -17,12 +17,13 @@
             <form id="auth-login-form" class="auth-card cyber-card" novalidate>
                 <div class="card-header">
                     <div class="card-icon">🔐</div>
-                    <div class="card-title">ACCESO COACH</div>
+                    <div id="auth-mode-title" class="card-title">ACCESO COACH</div>
                 </div>
                 <div id="auth-error" class="auth-error is-hidden" role="alert"></div>
+                <div id="auth-success" class="auth-success is-hidden" role="status"></div>
                 <div class="input-group">
                     <label class="input-label" for="auth-email">EMAIL</label>
-                    <input id="auth-email" class="cyber-input" type="email" autocomplete="username" placeholder="coach@titan.app">
+                    <input id="auth-email" class="cyber-input" type="email" autocomplete="username" placeholder="tu@email.com">
                 </div>
                 <div class="input-group">
                     <label class="input-label" for="auth-password">CONTRASEÑA</label>
@@ -32,10 +33,9 @@
                     <span class="button-text" id="auth-submit-label">ACCEDER</span>
                 </button>
                 <div class="auth-divider"><span>o</span></div>
-                <button type="button" id="auth-demo-btn" class="cyber-button secondary auth-demo-btn">
-                    <span class="button-text">MODO DEMO</span>
+                <button type="button" id="auth-toggle-btn" class="cyber-button secondary">
+                    <span class="button-text" id="auth-toggle-label">CREAR CUENTA</span>
                 </button>
-                <p class="text-small auth-hint">Demo con credenciales: <strong>coach@titan.app</strong> · <strong>Titan2025!</strong> — o entra sin contraseña con Modo demo.</p>
             </form>
         </div>
     </div>
