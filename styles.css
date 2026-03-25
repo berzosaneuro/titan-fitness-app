@@ -1141,7 +1141,7 @@ body {
 }
 
 /* TOAST */
-.titan-toast {
+.AÏS ROOM-toast {
     position: fixed;
     bottom: 100px;
     left: 50%;
@@ -1158,7 +1158,7 @@ body {
     animation: toastSlideUp 0.3s ease-out;
 }
 
-.titan-toast.titan-toast--out {
+.AÏS ROOM-toast.AÏS ROOM-toast--out {
     animation: toastSlideDown 0.3s ease-out forwards;
 }
 

@@ -1,0 +1,42 @@
+name: Deploy TestFlight
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: testflight-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Bundler
+        run: bundle install --jobs 4 --retry 3
+
+      - name: Fastlane deploy
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+          APP_STORE_CONNECT_API_KEY_PATH: ${{ secrets.APP_STORE_CONNECT_API_KEY_PATH }}
+          XCODE_PROJECT: ${{ vars.XCODE_PROJECT }}
+          XCODE_WORKSPACE: ${{ vars.XCODE_WORKSPACE }}
+          XCODE_SCHEME: ${{ vars.XCODE_SCHEME }}
+          XCODE_CONFIGURATION: ${{ vars.XCODE_CONFIGURATION }}
+        run: bundle exec fastlane deploy

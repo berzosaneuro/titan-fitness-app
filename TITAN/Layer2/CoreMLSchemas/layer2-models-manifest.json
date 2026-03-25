@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "2.0",
+  "mission": "TITAN iOS Layer2",
+  "notes": "Contratos de entrada/salida para modelos Core ML en dispositivo. Archivos .mlmodel son placeholders; nombres y shapes fijan el pipeline certificado.",
+  "tensorLayouts": {
+    "timeSeries128xF": { "shape": [1, 128, 32], "type": "float32", "description": "Ventana 128 muestras, 32 features fusionadas" },
+    "scalarProb": { "shape": [1, 1], "type": "float32", "description": "Probabilidad o índice 0–1" },
+    "vision224RGB": { "shape": [1, 3, 224, 224], "type": "float32", "description": "Frame ROI normalizado" },
+    "envVector8": { "shape": [1, 8], "type": "float32", "description": "dB lux °C humedad + deltas" }
+  },
+  "families": [
+    {
+      "familyId": "L2_DIAG_FATIGUE_STRESS",
+      "moduleRange": [101, 115],
+      "modelPlaceholder": "TitanL2_DiagnosisFatigueStress.mlmodel",
+      "inputs": [
+        { "name": "fused_window", "layout": "timeSeries128xF" },
+        { "name": "hrv_scalar", "layout": "scalarProb" },
+        { "name": "manual_rpe", "layout": "scalarProb" }
+      ],
+      "outputs": [
+        { "name": "fatigue_index", "layout": "scalarProb" },
+        { "name": "stress_index", "layout": "scalarProb" },
+        { "name": "confidence", "layout": "scalarProb" }
+      ]
+    },
+    {
+      "familyId": "L2_COGNITIVE_REACTION",
+      "moduleIds": [102, 115],
+      "modelPlaceholder": "TitanL2_CognitiveReactionNet.mlmodel",
+      "inputs": [
+        { "name": "reaction_times_ms", "shape": [1, 64], "type": "float32" },
+        { "name": "stimulus_labels", "shape": [1, 64], "type": "int32" }
+      ],
+      "outputs": [
+        { "name": "cognitive_fatigue", "layout": "scalarProb" },
+        { "name": "attention_drift", "layout": "scalarProb" }
+      ]
+    },
+    {
+      "familyId": "L2_VISUAL_FIXATION",
+      "moduleIds": [103],
+      "modelPlaceholder": "TitanL2_VisualFatigueBlink.mlmodel",
+      "inputs": [
+        { "name": "face_crop", "layout": "vision224RGB" },
+        { "name": "blink_features", "shape": [1, 16], "type": "float32" }
+      ],
+      "outputs": [
+        { "name": "ocular_strain", "layout": "scalarProb" }
+      ]
+    },
+    {
+      "familyId": "L2_ENVIRONMENTAL",
+      "moduleIds": [108],
+      "modelPlaceholder": "TitanL2_EnvironmentalStress.mlmodel",
+      "inputs": [
+        { "name": "env_vector", "layout": "envVector8" }
+      ],
+      "outputs": [
+        { "name": "outsider_stress", "layout": "scalarProb" },
+        { "name": "load_compensation", "layout": "scalarProb" }
+      ]
+    },
+    {
+      "familyId": "L2_RESPIRATORY",
+      "moduleIds": [110],
+      "modelPlaceholder": "TitanL2_RespiratoryImpedance.mlmodel",
+      "inputs": [
+        { "name": "breath_phase_series", "shape": [1, 256, 4], "type": "float32" },
+        { "name": "hr_aligned", "shape": [1, 256], "type": "float32" }
+      ],
+      "outputs": [
+        { "name": "respiratory_load", "layout": "scalarProb" }
+      ]
+    },
+    {
+      "familyId": "L2_REALTIME_CONTROL",
+      "moduleRange": [116, 135],
+      "modelPlaceholder": "TitanL2_RealtimeControlPolicy.mlmodel",
+      "inputs": [
+        { "name": "kinematic_state", "shape": [1, 24], "type": "float32" },
+        { "name": "target_bands", "shape": [1, 12], "type": "float32" },
+        { "name": "phase_one_hot", "shape": [1, 8], "type": "float32" }
+      ],
+      "outputs": [
+        { "name": "control_delta", "shape": [1, 8], "type": "float32" },
+        { "name": "haptic_pattern_id", "shape": [1, 1], "type": "int32" },
+        { "name": "safety_violation_prob", "layout": "scalarProb" }
+      ]
+    },
+    {
+      "familyId": "L2_TECHNIQUE_VISION",
+      "moduleIds": [120],
+      "modelPlaceholder": "TitanL2_PoseTechniqueGuard.mlmodel",
+      "inputs": [
+        { "name": "skeleton_heatmap", "shape": [1, 17, 64, 64], "type": "float32" }
+      ],
+      "outputs": [
+        { "name": "technique_score", "layout": "scalarProb" },
+        { "name": "critical_flag", "shape": [1, 1], "type": "int32" }
+      ]
+    },
+    {
+      "familyId": "L2_ADAPTIVE_COACH",
+      "moduleRange": [136, 150],
+      "modelPlaceholder": "TitanL2_AdaptiveCoachLSTM.mlmodel",
+      "inputs": [
+        { "name": "session_state", "shape": [1, 48], "type": "float32" },
+        { "name": "module_outputs_hist", "shape": [1, 16, 8], "type": "float32" }
+      ],
+      "outputs": [
+        { "name": "instruction_embedding", "shape": [1, 32], "type": "float32" },
+        { "name": "priority_weight", "layout": "scalarProb" }
+      ]
+    }
+  ]
+}

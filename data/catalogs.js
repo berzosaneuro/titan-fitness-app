@@ -1,0 +1,131 @@
+/**
+ * Catálogos locales — en producción: Edge Function / tabla `foods`, `exercises`.
+ */
+
+export const FOODS = [
+    {
+        id: 'rice_cream',
+        name: 'Crema de arroz',
+        p100: 8.75,
+        c100: 56.25,
+        f100: 2.5,
+        k100: 275,
+        tags: 'carb',
+    },
+    {
+        id: 'whey_iso',
+        name: 'Proteína ISO',
+        p100: 87.5,
+        c100: 12.5,
+        f100: 2.5,
+        k100: 400,
+        tags: 'proteína',
+    },
+    {
+        id: 'rice_cooked',
+        name: 'Arroz basmati (cocido)',
+        p100: 2.7,
+        c100: 28,
+        f100: 0.5,
+        k100: 130,
+        tags: 'carb',
+    },
+    {
+        id: 'chicken_breast',
+        name: 'Pechuga de pollo',
+        p100: 23,
+        c100: 0,
+        f100: 3.5,
+        k100: 165,
+        tags: 'proteína',
+    },
+    {
+        id: 'veg_mix',
+        name: 'Verduras mixtas',
+        p100: 1.5,
+        c100: 3.5,
+        f100: 0.2,
+        k100: 25,
+        tags: 'fibra',
+    },
+    {
+        id: 'cyclodextrin',
+        name: 'Ciclodextrina',
+        p100: 0,
+        c100: 95,
+        f100: 0,
+        k100: 380,
+        tags: 'intra',
+    },
+    {
+        id: 'eaa',
+        name: 'EAA (polvo)',
+        p100: 80,
+        c100: 5,
+        f100: 0,
+        k100: 350,
+        tags: 'amino',
+    },
+    {
+        id: 'creatine',
+        name: 'Creatina monohidrato',
+        p100: 0,
+        c100: 0,
+        f100: 0,
+        k100: 0,
+        tags: 'suplemento',
+    },
+    {
+        id: 'oats',
+        name: 'Avena en hojuelas',
+        p100: 13,
+        c100: 58,
+        f100: 7,
+        k100: 380,
+        tags: 'carb',
+    },
+    {
+        id: 'salmon',
+        name: 'Salmón fresco',
+        p100: 20,
+        c100: 0,
+        f100: 13,
+        k100: 208,
+        tags: 'grasa omega',
+    },
+    {
+        id: 'egg_whites',
+        name: 'Claras de huevo',
+        p100: 11,
+        c100: 0.7,
+        f100: 0.2,
+        k100: 52,
+        tags: 'proteína',
+    },
+    {
+        id: 'greek_yogurt',
+        name: 'Yogur griego 0%',
+        p100: 10,
+        c100: 3.6,
+        f100: 0.4,
+        k100: 59,
+        tags: 'proteína',
+    },
+];
+
+export const EXERCISES = [
+    { id: 'bench_bb', name: 'Press banca barra', muscle: 'Pecho', pattern: 'Empuje horizontal' },
+    { id: 'inc_db', name: 'Press inclinado mancuernas', muscle: 'Pecho superior', pattern: 'Empuje' },
+    { id: 'row_bb', name: 'Remo barra', muscle: 'Espalda', pattern: 'Tirón horizontal' },
+    { id: 'lat_pulldown', name: 'Jalón al pecho', muscle: 'Dorsal', pattern: 'Tirón vertical' },
+    { id: 'squat', name: 'Sentadilla trasera', muscle: 'Cuádriceps · glúteo', pattern: 'Rodilla dominante' },
+    { id: 'rdl', name: 'Peso muerto rumano', muscle: 'Isquio · cadena posterior', pattern: 'Bisagra' },
+    { id: 'leg_press', name: 'Prensa 45°', muscle: 'Cuádriceps', pattern: 'Accesorio pierna' },
+    { id: 'curl_db', name: 'Curl mancuerna', muscle: 'Bíceps', pattern: 'Accesorio' },
+    { id: 'tricep_push', name: 'Extensión tríceps polea', muscle: 'Tríceps', pattern: 'Accesorio' },
+    { id: 'lateral_raise', name: 'Elevaciones laterales', muscle: 'Deltoide lateral', pattern: 'Hombro' },
+];
+
+export function foodById(id) {
+    return FOODS.find((f) => f.id === id) || null;
+}

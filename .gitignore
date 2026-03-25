@@ -1,0 +1,13 @@
+.env
+.env.local
+# Supabase anon key (nunca en git)
+supabase.config.local.js
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+*.mobileprovision
+*.p12
+**/DerivedData/
+vendor/bundle/
+.vercel

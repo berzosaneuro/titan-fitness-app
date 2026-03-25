@@ -1,0 +1,2 @@
+apple_id(ENV["APPLE_ID"]) if ENV["APPLE_ID"] && !ENV["APPLE_ID"].empty?
+team_id(ENV["TEAM_ID"]) if ENV["TEAM_ID"] && !ENV["TEAM_ID"].empty?

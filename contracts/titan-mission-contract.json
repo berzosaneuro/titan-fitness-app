@@ -1,0 +1,57 @@
+{
+  "contractVersion": "1.0.0",
+  "description": "Contrato de datos agregados Coach Web ← Backend TITAN. Sin lógica crítica de latencia ni Dead Man's Switch; el binario iOS es la fuente de verdad operativa.",
+  "missionBinary": {
+    "missionUiVersion": "string",
+    "notes": "Debe coincidir con la UI inmutable certificada en el binario desplegado (TestFlight/App Store)."
+  },
+  "endpointsProfile": {
+    "style": "REST o GraphQL según backend",
+    "versionHeader": "X-Titan-Mission-Contract: 1.0.0"
+  },
+  "aggregateAthleteSnapshot": {
+    "athleteId": "uuid",
+    "coachTenantId": "string",
+    "window": {
+      "from": "ISO8601",
+      "to": "ISO8601"
+    },
+    "cnsr": {
+      "value": "number",
+      "min": 0,
+      "max": 100,
+      "source": "aggregated_from_ios_sessions",
+      "computedAt": "ISO8601"
+    },
+    "ico": {
+      "value": "number",
+      "min": 0,
+      "max": 100,
+      "source": "aggregated_from_ios_sessions",
+      "computedAt": "ISO8601"
+    },
+    "injuryRisk": {
+      "value": "number",
+      "min": 0,
+      "max": 100,
+      "pattern": "string | null",
+      "source": "aggregated_from_ios_sessions",
+      "computedAt": "ISO8601"
+    },
+    "preflightLight": "green | amber | red | null",
+    "lastSessionId": "uuid | null",
+    "disclaimer": "Valores orientativos para el coach; decisiones de seguridad en tiempo real ocurren solo en el cliente iOS certificado."
+  },
+  "coachWebAllowedDomains": [
+    "plans",
+    "history",
+    "leads",
+    "sessions_metadata",
+    "aggregates_cnsr_ico_risk"
+  ],
+  "coachWebForbidden": [
+    "realtime_dms_execution",
+    "sub_100ms_feedback_path",
+    "mutable_certified_ui_layout_from_server"
+  ]
+}

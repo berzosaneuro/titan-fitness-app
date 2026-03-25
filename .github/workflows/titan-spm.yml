@@ -1,0 +1,21 @@
+name: AÏS ROOM SPM
+
+on:
+  push:
+    paths:
+      - "AÏS ROOM/**"
+      - ".github/workflows/AÏS ROOM-spm.yml"
+  pull_request:
+    paths:
+      - "AÏS ROOM/**"
+      - ".github/workflows/AÏS ROOM-spm.yml"
+
+jobs:
+  build-test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift build
+        run: cd AÏS ROOM && swift build -v
+      - name: Swift test
+        run: cd AÏS ROOM && swift test -v

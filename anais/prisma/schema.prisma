@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+  COMPLETED
+}
+
+enum WalletTxType {
+  TOPUP
+  DEBIT
+  ADJUSTMENT
+}
+
+enum ContentMediaKind {
+  STANDARD
+  VIDEO
+}
+
+/** Presentación vídeo: teaser corto / candado estándar / premium. */
+enum ContentVideoTier {
+  TEASER
+  LOCKED
+  PREMIUM
+}
+
+model PlatformConfig {
+  id        Int      @id @default(1)
+  /** Overrides parciales sobre defaults (JSON). Admin editable. */
+  pricing   Json     @default("{}")
+  updatedAt DateTime @updatedAt
+}
+
+model AnalyticsEvent {
+  id           String   @id @default(cuid())
+  userId       String?
+  type         String
+  revenueCents Int      @default(0)
+  meta         Json?
+  createdAt    DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([userId, createdAt])
+}
+
+model UserNotification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read, createdAt])
+}
+
+model Invite {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  maxUses         Int       @default(10)
+  usedCount       Int       @default(0)
+  expiresAt       DateTime?
+  note            String?
+  createdByUserId String?
+  createdBy       User?     @relation("InviteCreator", fields: [createdByUserId], references: [id])
+  createdAt       DateTime  @default(now())
+  users           User[]
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  passwordHash       String
+  name               String?
+  image              String?
+  role               Role      @default(USER)
+  walletBalanceCents Int       @default(0)
+  totalSpentCents    Int       @default(0)
+  inviteId           String?
+  invite             Invite?   @relation(fields: [inviteId], references: [id])
+  lastSeenAt         DateTime?
+  /** Identificador de enlace /r/{code} (referidos). */
+  referralCode       String    @unique @default(cuid())
+  referredByUserId   String?
+  referredBy         User?     @relation("UserReferrals", fields: [referredByUserId], references: [id])
+  referrals          User[]    @relation("UserReferrals")
+  /** Motor de decisiones: 100 = 1.00× sobre precios dinámicos. */
+  priceMultiplierPercent Int   @default(100)
+  /** Mensajes gratis extra (A/B o reglas). */
+  bonusFreeMessages      Int   @default(0)
+  /** Primera sesión: mensajes + piezas sembradas una sola vez. */
+  firstSessionSeededAt   DateTime?
+  /** Nivel VIP persistido (sincronizado con gasto y umbrales). */
+  vipLevel               Int       @default(1)
+  /** Fase embudo 1–5: primera recarga → micro → progresión → premium → retorno. */
+  journeyPhase           Int       @default(1)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  subscription       Subscription?
+  appointments       Appointment[]
+  sentMessages       Message[]           @relation("SentMessages")
+  recvMessages       Message[]           @relation("RecvMessages")
+  walletTransactions WalletTransaction[]
+  messageUnlocks     MessageUnlock[]
+  contentUnlocks     ContentUnlock[]
+  chatEntitlement    ChatEntitlement?
+  createdInvites     Invite[]            @relation("InviteCreator")
+  notifications      UserNotification[]
+  purchases          Purchase[]
+}
+
+model ChatEntitlement {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  freeMessagesLeft    Int       @default(1)
+  lastMemberMessageAt DateTime?
+  lastReengageAt      DateTime?
+}
+
+model WalletTransaction {
+  id                      String       @id @default(cuid())
+  userId                  String
+  user                    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                    WalletTxType
+  amountCents             Int
+  balanceAfterCents       Int
+  stripeCheckoutSessionId String?      @unique
+  reason                  String?
+  createdAt               DateTime     @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  status               SubscriptionStatus @default(INACTIVE)
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startAt   DateTime
+  endAt     DateTime
+  status    AppointmentStatus @default(CONFIRMED)
+  notes     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([userId, startAt])
+}
+
+model Content {
+  id               String           @id @default(cuid())
+  title            String
+  description      String?
+  previewUrl       String?
+  fullUrl          String?
+  isPremium        Boolean          @default(true)
+  unlockPriceCents Int              @default(650)
+  sortOrder        Int              @default(0)
+  isSeed           Boolean          @default(false)
+  mediaKind        ContentMediaKind @default(STANDARD)
+  /** Vídeo: preview corto (autoplay) antes del corte. */
+  videoTeaserUrl   String?
+  videoFullUrl     String?
+  videoPosterUrl   String?
+  teaserSeconds    Int              @default(8)
+  videoTier        ContentVideoTier?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  unlocks          ContentUnlock[]
+}
+
+model Purchase {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountCents Int
+  kind        String
+  refId       String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([kind, createdAt])
+}
+
+model ContentUnlock {
+  id        String   @id @default(cuid())
+  userId    String
+  contentId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, contentId])
+}
+
+model Message {
+  id               String          @id @default(cuid())
+  senderId         String
+  receiverId       String
+  sender           User            @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver         User            @relation("RecvMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  body             String
+  read             Boolean         @default(false)
+  seenAt           DateTime?
+  isLocked         Boolean         @default(false)
+  unlockPriceCents Int?
+  previewText      String?
+  priorityBoost    Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  unlocks          MessageUnlock[]
+
+  @@index([senderId, receiverId, createdAt])
+}
+
+model MessageUnlock {
+  id        String   @id @default(cuid())
+  userId    String
+  messageId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, messageId])
+}

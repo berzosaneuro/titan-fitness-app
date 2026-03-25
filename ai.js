@@ -1,5 +1,5 @@
 /**
- * Titan OS — capa de IA (copiloto del entrenador).
+ * A�S ROOM OS — capa de IA (copiloto del entrenador).
  * Sin manipulación de DOM. Lista para: Ollama → backend /api/ai → multi-tenant.
  */
 

@@ -1,0 +1,66 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload to TestFlight (non-interactive)"
+  lane :deploy do
+    ENV["CI"] = "true" if ENV["CI"].nil?
+    ENV["FASTLANE_SKIP_UPDATE_CHECK"] = "1"
+    ENV["FASTLANE_DONT_STORE_PASSWORD"] = "1"
+    ENV["SPACESHIP_ONLY_ALLOW_INTERACTIVE_2FA"] = "false"
+
+    api_key = if ENV["APP_STORE_CONNECT_API_KEY_PATH"] && !ENV["APP_STORE_CONNECT_API_KEY_PATH"].empty?
+      app_store_connect_api_key(
+        key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+        issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+        key_filepath: ENV.fetch("APP_STORE_CONNECT_API_KEY_PATH"),
+        duration: 1200,
+        in_house: false
+      )
+    else
+      app_store_connect_api_key(
+        key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+        issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+        key_content: ENV.fetch("APP_STORE_CONNECT_API_KEY"),
+        is_key_content_base64: ENV["APP_STORE_CONNECT_API_KEY_BASE64"] == "1",
+        duration: 1200,
+        in_house: false
+      )
+    end
+
+    scheme = ENV.fetch("XCODE_SCHEME", "TITAN")
+    team = ENV.fetch("TEAM_ID")
+
+    gym_params = {
+      scheme: scheme,
+      export_method: "app-store",
+      configuration: ENV.fetch("XCODE_CONFIGURATION", "Release"),
+      clean: true,
+      silent: false,
+      xcargs: "CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=#{team} -allowProvisioningUpdates",
+      export_options: {
+        method: "app-store",
+        signingStyle: "automatic",
+        teamID: team
+      }
+    }
+
+    ws = ENV["XCODE_WORKSPACE"]
+    pr = ENV["XCODE_PROJECT"]
+    if ws && !ws.empty?
+      gym_params[:workspace] = ws
+    elsif pr && !pr.empty?
+      gym_params[:project] = pr
+    else
+      UI.user_error!("Set XCODE_WORKSPACE or XCODE_PROJECT to your host .xcworkspace / .xcodeproj (Swift Package TITAN requires an app target).")
+    end
+
+    build_app(**gym_params)
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      apple_id: ENV["APPLE_ID"],
+      team_id: team
+    )
+  end
+end
