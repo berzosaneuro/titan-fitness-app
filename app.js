@@ -1,5 +1,5 @@
 /**
- * Titan OS â€” lÃ³gica de aplicaciÃ³n (UI, navegaciÃ³n, modales).
+ * AÏS ROOM OS â€” lÃ³gica de aplicaciÃ³n (UI, navegaciÃ³n, modales).
  * AutenticaciÃ³n: ./auth.js (sin DOM). IA: ./ai.js (sin DOM).
  */
 import {
@@ -169,11 +169,11 @@ function closeModal() {
 
 function showToast(message) {
     const toast = document.createElement('div');
-    toast.className = 'titan-toast';
+    toast.className = 'AÏS ROOM-toast';
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => {
-        toast.classList.add('titan-toast--out');
+        toast.classList.add('AÏS ROOM-toast--out');
         setTimeout(() => toast.remove(), 300);
     }, 2500);
 }
@@ -520,7 +520,7 @@ function completeTask(element) {
 
 function copyLink() {
     const link =
-        'https://titan-os.app/onboarding/new-client-' +
+        'https://AÏS ROOM-os.app/onboarding/new-client-' +
         Math.random().toString(36).substring(2, 11);
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard
@@ -854,7 +854,7 @@ const api = {
 };
 
 Object.assign(window, api);
-window.TitanApp = {
+window.AÏS ROOMApp = {
     version: '5.0.0-saas-auth',
     routes: { SCREEN_IDS },
     tenant: TENANT_CONFIG,
@@ -870,7 +870,7 @@ const elAuth = () => document.getElementById('auth-screen');
 const elApp = () => document.getElementById('app-screen');
 
 let detachPopstate = null;
-let titanShellStarted = false;
+let AÏS ROOMShellStarted = false;
 
 function setAuthLayerVisible(visible) {
     const a = elAuth();
@@ -916,17 +916,17 @@ function setAuthError(message) {
     }
 }
 
-function stopTitanShell() {
+function stopAÏS ROOMShell() {
     if (typeof detachPopstate === 'function') {
         detachPopstate();
         detachPopstate = null;
     }
-    titanShellStarted = false;
+    AÏS ROOMShellStarted = false;
 }
 
-function startTitanShell() {
-    if (titanShellStarted) return;
-    titanShellStarted = true;
+function startAÏS ROOMShell() {
+    if (AÏS ROOMShellStarted) return;
+    AÏS ROOMShellStarted = true;
     canonicalizeRootUrl();
     const initialScreen = getScreenIdFromLocation();
     navigateToScreen(initialScreen, { syncHistory: false });
@@ -951,11 +951,11 @@ function canonicalizeRootUrl() {
 function showAppShell(user) {
     setAuthLayerVisible(false);
     updateUserBar(user);
-    startTitanShell();
+    startAÏS ROOMShell();
 }
 
 function showAuthShell() {
-    stopTitanShell();
+    stopAÏS ROOMShell();
     closeModal();
     const v = document.getElementById('vault');
     if (v) {
@@ -1064,13 +1064,19 @@ async function logoutApp() {
 }
 
 async function initApp() {
-    bindAuthUi();
     const session = await getSession();
     if (session) {
         showAppShell(session.user);
     } else {
         showAuthShell();
     }
+    bindAuthUi();
 }
 
-initApp();
+try {
+    await initApp();
+} catch (err) {
+    console.error('initApp', err);
+    showAuthShell();
+    bindAuthUi();
+}
