@@ -1,0 +1,49 @@
+{
+  "name": "TITAN OS — Copiloto para entrenadores",
+  "short_name": "TITAN OS",
+  "description": "Plataforma de operaciones para coaches de fitness con IA asistida.",
+  "start_url": "/inicio",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "lang": "es",
+  "scope": "/",
+  "categories": ["fitness", "productivity", "sports"],
+  "icons": [
+    {
+      "src": "/public/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Atletas",
+      "short_name": "Atletas",
+      "description": "Ver lista de atletas",
+      "url": "/atletas",
+      "icons": [{ "src": "/public/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Inicio",
+      "description": "Dashboard principal",
+      "url": "/inicio",
+      "icons": [{ "src": "/public/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
